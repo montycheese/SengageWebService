@@ -1,0 +1,233 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Sengage WebService
+
+  SAM Template for Sengage WebService that has the DynamoDB table and Lambda functions
+  needed to demonstrate the Websocket protocol on API Gateway.
+
+  '
+Globals:
+  Api:
+    Cors:
+      AllowHeaders: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with'''
+      AllowMethods: '''GET,HEAD,POST,PUT,OPTIONS,PATCH'''
+      AllowOrigin: '''*'''
+  Function:
+    Environment:
+      Variables:
+        TableName: Connections
+Outputs:
+  ConnectionsTableArn:
+    Description: Connections table ARN
+    Value:
+      Fn::GetAtt:
+      - ConnectionsTable
+      - Arn
+  OnConnectFunctionArn:
+    Description: OnConnect function ARN
+    Value:
+      Fn::GetAtt:
+      - OnConnectFunction
+      - Arn
+  OnDisconnectFunctionArn:
+    Description: OnDisconnect function ARN
+    Value:
+      Fn::GetAtt:
+      - OnDisconnectFunction
+      - Arn
+  SendMessageFunctionArn:
+    Description: SendMessage function ARN
+    Value:
+      Fn::GetAtt:
+      - SendMessageFunction
+      - Arn
+  WebSocketURI:
+    Description: The WSS Protocol URI to connect to
+    Value:
+      Fn::Join:
+      - ''
+      - - wss://
+        - Ref: SengageWebSocket
+        - .execute-api.
+        - Ref: AWS::Region
+        - .amazonaws.com/
+        - Ref: Stage
+Parameters:
+  DeploymentStage:
+    Description: (Required) The Development stage we are deploying to. (one of Beta,
+      Prod)
+    Type: String
+Resources:
+  ConnectInteg:
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+      Description: Connect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+    Type: AWS::ApiGatewayV2::Integration
+  ConnectRoute:
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      RouteKey: $connect
+      Target:
+        Fn::Join:
+        - /
+        - - integrations
+          - Ref: ConnectInteg
+    Type: AWS::ApiGatewayV2::Route
+  ConnectionsTable:
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: connectionId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: connectionId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      SSESpecification:
+        SSEEnabled: false
+      TableName: Connections
+    Type: AWS::DynamoDB::Table
+  Deployment:
+    DependsOn:
+    - ConnectRoute
+    - SendRoute
+    - DisconnectRoute
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+    Type: AWS::ApiGatewayV2::Deployment
+  DisconnectInteg:
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
+    Type: AWS::ApiGatewayV2::Integration
+  DisconnectRoute:
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      RouteKey: $disconnect
+      Target:
+        Fn::Join:
+        - /
+        - - integrations
+          - Ref: DisconnectInteg
+    Type: AWS::ApiGatewayV2::Route
+  OnConnectFunction:
+    Properties:
+      CodeUri: s3://deployment-us-east-1-lambdas-1/1b55a5fe751e5e4420372cdf1c14423e
+      Handler: io.sengage.webservice.function.OnConnect
+      MemorySize: 256
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Connections
+      Runtime: java8
+    Type: AWS::Serverless::Function
+  OnConnectPermission:
+    DependsOn:
+    - SengageWebSocket
+    - OnConnectFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: OnConnectFunction
+      Principal: apigateway.amazonaws.com
+    Type: AWS::Lambda::Permission
+  OnDisconnectFunction:
+    Properties:
+      CodeUri: s3://deployment-us-east-1-lambdas-1/1b55a5fe751e5e4420372cdf1c14423e
+      Handler: io.sengage.webservice.function.OnDisconnect
+      MemorySize: 256
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Connections
+      Runtime: java8
+    Type: AWS::Serverless::Function
+  OnDisconnectPermission:
+    DependsOn:
+    - SengageWebSocket
+    - OnDisconnectFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: OnDisconnectFunction
+      Principal: apigateway.amazonaws.com
+    Type: AWS::Lambda::Permission
+  SendInteg:
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+      Description: Send Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendMessageFunction.Arn}/invocations
+    Type: AWS::ApiGatewayV2::Integration
+  SendMessageFunction:
+    Properties:
+      CodeUri: s3://deployment-us-east-1-lambdas-1/1b55a5fe751e5e4420372cdf1c14423e
+      Handler: io.sengage.webservice.function.SendMessage
+      MemorySize: 256
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Connections
+      - Statement:
+        - Action:
+          - execute-api:ManageConnections
+          Effect: Allow
+          Resource:
+          - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SengageWebSocket}/*
+      Runtime: java8
+      Timeout: 30
+    Type: AWS::Serverless::Function
+  SendMessagePermission:
+    DependsOn:
+    - SengageWebSocket
+    - SendMessageFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: SendMessageFunction
+      Principal: apigateway.amazonaws.com
+    Type: AWS::Lambda::Permission
+  SendRoute:
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+      AuthorizationType: NONE
+      OperationName: SendRoute
+      RouteKey: sendMessage
+      Target:
+        Fn::Join:
+        - /
+        - - integrations
+          - Ref: SendInteg
+    Type: AWS::ApiGatewayV2::Route
+  SengageWebSocket:
+    Properties:
+      Name: SengageWebSocket
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.message
+    Type: AWS::ApiGatewayV2::Api
+  Stage:
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+      DeploymentId:
+        Ref: Deployment
+      Description: Stage
+      StageName:
+        Ref: DeploymentStage
+    Type: AWS::ApiGatewayV2::Stage
+Transform: AWS::Serverless-2016-10-31
