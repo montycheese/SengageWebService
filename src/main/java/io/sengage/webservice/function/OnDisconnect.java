@@ -1,40 +1,37 @@
 package io.sengage.webservice.function;
 
+import io.sengage.webservice.model.ServerlessOutput;
+import io.sengage.webservice.model.WebSocketInput;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.http.HttpStatus;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
-public class OnDisconnect extends BaseLambda {
+public class OnDisconnect extends BaseLambda<WebSocketInput, ServerlessOutput> {
 
-private LambdaLogger logger;
-	
+	private LambdaLogger logger;
+
+
 	@Override
-	public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
-        logger = context.getLogger();
+	public ServerlessOutput handleRequest(WebSocketInput input, Context context) {
+	    logger = context.getLogger();
 		
-		int letter;
-        String eventObject = "";
-
-        while ((letter = input.read()) > -1) {
-            char inputChar= (char) letter;
-            eventObject += inputChar;
-        }
-        
-        logger.log("OnDisconnect: input: " + eventObject);
-        
-        //Passing a custom response as the output string
-        String response = "{\n" +
-                "    \"statusCode\": 200,\n" +
-                "    \"headers\": {\"Content-Type\": \"application/json\"},\n" +
-                "    \"body\": \"plain text response\"\n" +
-                "}";
-        
-        logger.log("OnDisconnect: response: " + response);
-        
-        output.write(response.getBytes());
+		final ServerlessOutput output = new ServerlessOutput();;
+		
+	    
+	    logger.log("SendMessage: input: " + input);
+	    
+	 
+	    
+	    output.setBody("Hello!");
+	    output.setStatusCode(HttpStatus.SC_OK);
+	    output.setHeaders(getOutputHeaders());
+	    return output;
 	}
 
 }

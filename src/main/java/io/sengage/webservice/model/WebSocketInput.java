@@ -1,12 +1,20 @@
 package io.sengage.webservice.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class WebSocketInput {
-
-
 	private RequestContext requestContext;
 	private String body;
 	private boolean isBase64Encoded;
 	 
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
 	public static class RequestContext {
 		private String routeKey;
 		private String authorizer;
@@ -27,6 +35,9 @@ public class WebSocketInput {
 		private String apiId;
 		private String status;
 		 
+		@Data
+		@AllArgsConstructor
+		@NoArgsConstructor
 		public static class Identity {
 			private String cognitoIdentityPoolId = null;
 			private String accountId = null;
