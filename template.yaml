@@ -19,7 +19,7 @@ Globals:
 
 
 Parameters:
-  Stage:
+  DeploymentStage:
     Type: String
     Description: (Required) The Development stage we are deploying to. (one of Beta, Prod)
 
@@ -27,9 +27,9 @@ Resources:
   SengageWebSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: SimpleChatWebSocket
+      Name: SengageWebSocket
       ProtocolType: WEBSOCKET
-      RouteSelectionExpression: "$request.body.message"
+      RouteSelectionExpression: "$request.body.action"
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -97,11 +97,11 @@ Resources:
     - SendRoute
     - DisconnectRoute
     Properties:
-      ApiId: !Ref SimpleChatWebSocket
+      ApiId: !Ref SengageWebSocket
   Stage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
-      StageName: !Ref Stage
+      StageName: !Ref DeploymentStage
       Description: Stage
       DeploymentId: !Ref Deployment
       ApiId: !Ref SengageWebSocket
@@ -129,11 +129,11 @@ Resources:
       Runtime: java8
       Policies:
       - DynamoDBCrudPolicy:
-          TableName: !Ref TableName
+          TableName: "Connections"
   OnConnectPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - SimpleChatWebSocket
+      - SengageWebSocket
       - OnConnectFunction
     Properties:
       Action: lambda:InvokeFunction
