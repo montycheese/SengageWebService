@@ -29,7 +29,7 @@ Resources:
     Properties:
       Name: SengageWebSocket
       ProtocolType: WEBSOCKET
-      RouteSelectionExpression: "$request.body.action"
+      RouteSelectionExpression: "$request.body.message"
   ConnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -164,6 +164,7 @@ Resources:
       CodeUri:  ./target/webservice-1.0.0.jar
       Handler: io.sengage.webservice.function.SendMessage
       MemorySize: 256
+      Timeout: 30
       Runtime: java8
       Policies:
       - DynamoDBCrudPolicy:

@@ -1,6 +1,5 @@
 package io.sengage.webservice.function;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import io.sengage.webservice.model.ServerlessOutput;
@@ -8,6 +7,7 @@ import io.sengage.webservice.model.WebSocketInput;
 
 import org.apache.http.HttpStatus;
 
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
@@ -16,9 +16,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
 public class SendMessage extends BaseLambda<WebSocketInput, ServerlessOutput> {
-
-	private static final String CONNECTIONS_CALLBACK_URL = 
-			"https://ohex0fwh97.execute-api.us-east-1.amazonaws.com/Beta/@connections";
 	
 	private LambdaLogger logger;
  
@@ -34,16 +31,21 @@ public class SendMessage extends BaseLambda<WebSocketInput, ServerlessOutput> {
         
         logger.log("SendMessage: input: " + input);
         
+        EndpointConfiguration endpointConfig = new EndpointConfiguration(
+            input.getRequestContext().getDomainName() + "/" + input.getRequestContext().getStage(),
+            System.getenv("AWS_REGION")
+        );
         // TODO use async
         AmazonApiGatewayManagementApi client = 
-        		AmazonApiGatewayManagementApiClientBuilder.defaultClient();
+        		AmazonApiGatewayManagementApiClientBuilder.standard()
+        		.withEndpointConfiguration(endpointConfig).build();
        
         PostToConnectionRequest request = new PostToConnectionRequest()
         .withConnectionId(input.getRequestContext().getConnectionId())
         .withData(ByteBuffer.wrap(input.getBody().getBytes()));
         try {
             PostToConnectionResult result = client.postToConnection(request);
-    		logger.log("SendMessage: " + result.toString());
+    		logger.log("SendMessage: message response successful");
         } catch(Exception e) {
         	logException(logger, e);
         }

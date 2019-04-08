@@ -3,10 +3,6 @@ package io.sengage.webservice.function;
 import io.sengage.webservice.model.ServerlessOutput;
 import io.sengage.webservice.model.WebSocketInput;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import org.apache.http.HttpStatus;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -25,8 +21,6 @@ public class OnConnect extends BaseLambda<WebSocketInput, ServerlessOutput> {
 		
 	    
 	    logger.log("SendMessage: input: " + input);
-	    
-	 
 	    
 	    output.setBody("Hello!");
 	    output.setStatusCode(HttpStatus.SC_OK);
