@@ -16,17 +16,13 @@ public class OnDisconnect extends BaseLambda<WebSocketInput, ServerlessOutput> {
 
 	private LambdaLogger logger;
 
-
 	@Override
 	public ServerlessOutput handleRequest(WebSocketInput input, Context context) {
 	    logger = context.getLogger();
 		
 		final ServerlessOutput output = new ServerlessOutput();;
-		
-	    
+ 
 	    logger.log("SendMessage: input: " + input);
-	    
-	 
 	    
 	    output.setBody("Hello!");
 	    output.setStatusCode(HttpStatus.SC_OK);

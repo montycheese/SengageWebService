@@ -1,6 +1,9 @@
 package io.sengage.webservice.function;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import io.sengage.webservice.model.ServerlessOutput;
 import io.sengage.webservice.model.WebSocketInput;
@@ -18,32 +21,40 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
 public class SendMessage extends BaseLambda<WebSocketInput, ServerlessOutput> {
 	
+	private static final List<String> COLORS = new ArrayList<>();
+	private static final Random rand = new Random();
+	
 	private LambdaLogger logger;
+	
+	static {
+		COLORS.add("red");
+		COLORS.add("blue");
+		COLORS.add("green");
+		COLORS.add("yellow");
+		COLORS.add("pink");
+		COLORS.add("black");
+		COLORS.add("white");
+		COLORS.add("orange");
+		COLORS.add("purple");
+		COLORS.add("cyan");
+	}
  
 	@Override
 	public ServerlessOutput handleRequest(WebSocketInput input, Context context) {
         logger = context.getLogger();
-		
-		final ServerlessOutput output = new ServerlessOutput();
-        output.setBody("Hello!");
-        output.setStatusCode(HttpStatus.SC_OK);
-        output.setHeaders(getOutputHeaders());
-		
-        
         logger.log("SendMessage: input: " + input);
         
         EndpointConfiguration endpointConfig = new EndpointConfiguration(
             input.getRequestContext().getDomainName() + "/" + input.getRequestContext().getStage(),
             System.getenv("AWS_REGION")
         );
-        // TODO use async
         AmazonApiGatewayManagementApi client = 
         		AmazonApiGatewayManagementApiClientBuilder.standard()
         		.withEndpointConfiguration(endpointConfig).build();
        
         PostToConnectionRequest request = new PostToConnectionRequest()
         .withConnectionId(input.getRequestContext().getConnectionId())
-        .withData(ByteBuffer.wrap(input.getBody().getBytes()));
+        .withData(ByteBuffer.wrap(getRandomColor().getBytes()));
         try {
             PostToConnectionResult result = client.postToConnection(request);
     		logger.log("SendMessage: message response successful");
@@ -55,7 +66,15 @@ public class SendMessage extends BaseLambda<WebSocketInput, ServerlessOutput> {
         	logException(logger, e);
         }
 
+		final ServerlessOutput output = new ServerlessOutput();
+        output.setBody("Hello!");
+        output.setStatusCode(HttpStatus.SC_OK);
+        output.setHeaders(getOutputHeaders());
         return output;
+	}
+	
+	private String getRandomColor() {
+		return COLORS.get(rand.nextInt(COLORS.size() - 1));
 	}
 
 }
