@@ -27,7 +27,7 @@ Resources:
   SengageWebSocket:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: SengageWebSocket
+      Name: SengageWSWebService
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: "$request.body.message"
   ConnectRoute:
@@ -35,7 +35,8 @@ Resources:
     Properties:
       ApiId: !Ref SengageWebSocket
       RouteKey: $connect
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
       OperationName: ConnectRoute
       Target: !Join
         - '/'
@@ -75,7 +76,6 @@ Resources:
     Properties:
       ApiId: !Ref SengageWebSocket
       RouteKey: sendMessage
-      AuthorizationType: NONE
       OperationName: SendRoute
       Target: !Join
         - '/'
@@ -175,6 +175,28 @@ Resources:
           - 'execute-api:ManageConnections'
           Resource:
           - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SengageWebSocket}/*'
+  LambdaAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./target/webservice-1.0.0.jar
+      Handler: io.sengage.webservice.function.LambdaAuthorizer
+      MemorySize: 256
+      Runtime: java8
+      Timeout: 30
+      Policies:
+      - AWSLambdaFullAccess
+      - CloudWatchLogsFullAccess
+        
+  LambdaAuthorizerFunctionPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - SengageWebSocket
+      - LambdaAuthorizerFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaAuthorizerFunction
+      Principal: apigateway.amazonaws.com
+      
   SendMessagePermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -184,6 +206,20 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !Ref SendMessageFunction
       Principal: apigateway.amazonaws.com
+      
+  LambdaAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    #DependsOn:
+    #  - LambdaAuthorizerFunction
+    Properties:
+      ApiId: !Ref SengageWebSocket
+      AuthorizerType: REQUEST
+      Name: SengageWSApiAuthorizer
+      AuthorizerUri: !Join ['', ['arn:aws:apigateway:', !Ref 'AWS::Region', ':lambda:path/2015-03-31/functions/', !GetAtt LambdaAuthorizerFunction.Arn, '/invocations']]
+      IdentitySource:
+       #https://docs.aws.amazon.com/apigateway/latest/developerguide/request-response-data-mappings.html
+        - "route.request.querystring.Auth"
+      
 
 Outputs:
   ConnectionsTableArn:

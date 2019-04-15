@@ -1,5 +1,8 @@
 package io.sengage.webservice.model;
 
+import java.util.List;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,13 +14,17 @@ public class WebSocketInput {
 	private RequestContext requestContext;
 	private String body;
 	private boolean isBase64Encoded;
+	Map<String, String> headers;
+	Map<String, List<String>> multiValueHeaders;
+	Map<String, String> queryStringParameters;
+	Map<String, List<String>> multiValueQueryStringParameters;
 	 
 	@Data
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class RequestContext {
 		private String routeKey;
-		private String authorizer;
+		private Authorizer authorizer;
 		private String messageId;
 		private String integrationLatency;
 	    private String eventType;
@@ -34,6 +41,14 @@ public class WebSocketInput {
 		private String connectionId;
 		private String apiId;
 		private String status;
+		
+		@Data
+		@AllArgsConstructor
+		@NoArgsConstructor
+		public static class Authorizer {
+			 private String principalId;
+			 private float integrationLatency;
+		}
 		 
 		@Data
 		@AllArgsConstructor

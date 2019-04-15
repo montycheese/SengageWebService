@@ -70,7 +70,9 @@ Resources:
     Properties:
       ApiId:
         Ref: SengageWebSocket
-      AuthorizationType: NONE
+      AuthorizationType: CUSTOM
+      AuthorizerId:
+        Ref: LambdaAuthorizer
       OperationName: ConnectRoute
       RouteKey: $connect
       Target:
@@ -125,9 +127,49 @@ Resources:
         - - integrations
           - Ref: DisconnectInteg
     Type: AWS::ApiGatewayV2::Route
+  LambdaAuthorizer:
+    Properties:
+      ApiId:
+        Ref: SengageWebSocket
+      AuthorizerType: REQUEST
+      AuthorizerUri:
+        Fn::Join:
+        - ''
+        - - 'arn:aws:apigateway:'
+          - Ref: AWS::Region
+          - :lambda:path/2015-03-31/functions/
+          - Fn::GetAtt:
+            - LambdaAuthorizerFunction
+            - Arn
+          - /invocations
+      IdentitySource:
+      - route.request.querystring.Auth
+      Name: SengageWSApiAuthorizer
+    Type: AWS::ApiGatewayV2::Authorizer
+  LambdaAuthorizerFunction:
+    Properties:
+      CodeUri: s3://deployment-us-east-1-lambdas-1/2e9afe5537b11bedea0fac622bd665bb
+      Handler: io.sengage.webservice.function.LambdaAuthorizer
+      MemorySize: 256
+      Policies:
+      - AWSLambdaFullAccess
+      - CloudWatchLogsFullAccess
+      Runtime: java8
+      Timeout: 30
+    Type: AWS::Serverless::Function
+  LambdaAuthorizerFunctionPermission:
+    DependsOn:
+    - SengageWebSocket
+    - LambdaAuthorizerFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: LambdaAuthorizerFunction
+      Principal: apigateway.amazonaws.com
+    Type: AWS::Lambda::Permission
   OnConnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/1b55a5fe751e5e4420372cdf1c14423e
+      CodeUri: s3://deployment-us-east-1-lambdas-1/2e9afe5537b11bedea0fac622bd665bb
       Handler: io.sengage.webservice.function.OnConnect
       MemorySize: 256
       Policies:
@@ -147,7 +189,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnDisconnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/1b55a5fe751e5e4420372cdf1c14423e
+      CodeUri: s3://deployment-us-east-1-lambdas-1/2e9afe5537b11bedea0fac622bd665bb
       Handler: io.sengage.webservice.function.OnDisconnect
       MemorySize: 256
       Policies:
@@ -176,7 +218,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Integration
   SendMessageFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/1b55a5fe751e5e4420372cdf1c14423e
+      CodeUri: s3://deployment-us-east-1-lambdas-1/2e9afe5537b11bedea0fac622bd665bb
       Handler: io.sengage.webservice.function.SendMessage
       MemorySize: 256
       Policies:
@@ -205,7 +247,6 @@ Resources:
     Properties:
       ApiId:
         Ref: SengageWebSocket
-      AuthorizationType: NONE
       OperationName: SendRoute
       RouteKey: sendMessage
       Target:
@@ -216,7 +257,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
   SengageWebSocket:
     Properties:
-      Name: SengageWebSocket
+      Name: SengageWSWebService
       ProtocolType: WEBSOCKET
       RouteSelectionExpression: $request.body.message
     Type: AWS::ApiGatewayV2::Api

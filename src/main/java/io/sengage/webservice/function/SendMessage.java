@@ -10,6 +10,7 @@ import org.apache.http.HttpStatus;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApi;
 import com.amazonaws.services.apigatewaymanagementapi.AmazonApiGatewayManagementApiClientBuilder;
+import com.amazonaws.services.apigatewaymanagementapi.model.GoneException;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionRequest;
 import com.amazonaws.services.apigatewaymanagementapi.model.PostToConnectionResult;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -46,6 +47,10 @@ public class SendMessage extends BaseLambda<WebSocketInput, ServerlessOutput> {
         try {
             PostToConnectionResult result = client.postToConnection(request);
     		logger.log("SendMessage: message response successful");
+        } catch(GoneException e) {
+        	logger.log(String.format("SendMessage: The connection with the id %s no longer exists.", 
+        			input.getRequestContext().getConnectionId()));
+        	// TODO: error handling.
         } catch(Exception e) {
         	logException(logger, e);
         }

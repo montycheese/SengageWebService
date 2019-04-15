@@ -22,6 +22,6 @@ public abstract class BaseLambda<I, O>
 	protected void logException(LambdaLogger logger, Exception e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
-        logger.log(sw.toString());
+        logger.log("logException() " + sw.toString());
 	}
 }
