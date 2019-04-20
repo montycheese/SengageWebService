@@ -6,14 +6,12 @@ Description: 'Sengage WebService
 
   '
 Globals:
-  Api:
-    Cors:
-      AllowHeaders: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with'''
-      AllowMethods: '''GET,HEAD,POST,PUT,OPTIONS,PATCH'''
-      AllowOrigin: '''*'''
   Function:
     Environment:
       Variables:
+        ClientId: cdawvhusl1d795u9lddads9w0ar7w9
+        ExtensionOwnerTwitchId: '79606633'
+        ExtensionVersion: 0.0.1
         TableName: Connections
 Outputs:
   ConnectionsTableArn:
@@ -57,6 +55,27 @@ Parameters:
       Prod)
     Type: String
 Resources:
+  ApiGatewayLambdaInvokePermission:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - apigateway.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - lambda:InvokeFunction
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: ApiGatewayLambdaInvokePermission
+    Type: AWS::IAM::Role
   ConnectInteg:
     Properties:
       ApiId:
@@ -96,6 +115,31 @@ Resources:
         SSEEnabled: false
       TableName: Connections
     Type: AWS::DynamoDB::Table
+  DefaultLambdaInvocationRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStream
+            - cloudwatch:PutMetricData
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: LambdaInvocationRolePolicy
+    Type: AWS::IAM::Role
   Deployment:
     DependsOn:
     - ConnectRoute
@@ -148,7 +192,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Authorizer
   LambdaAuthorizerFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/2e9afe5537b11bedea0fac622bd665bb
+      CodeUri: s3://deployment-us-east-1-lambdas-1/4a43145c0ac9ed4f019c23abd522a913
       Handler: io.sengage.webservice.function.LambdaAuthorizer
       MemorySize: 256
       Policies:
@@ -169,7 +213,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnConnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/2e9afe5537b11bedea0fac622bd665bb
+      CodeUri: s3://deployment-us-east-1-lambdas-1/4a43145c0ac9ed4f019c23abd522a913
       Handler: io.sengage.webservice.function.OnConnect
       MemorySize: 256
       Policies:
@@ -189,7 +233,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnDisconnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/2e9afe5537b11bedea0fac622bd665bb
+      CodeUri: s3://deployment-us-east-1-lambdas-1/4a43145c0ac9ed4f019c23abd522a913
       Handler: io.sengage.webservice.function.OnDisconnect
       MemorySize: 256
       Policies:
@@ -218,7 +262,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Integration
   SendMessageFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/2e9afe5537b11bedea0fac622bd665bb
+      CodeUri: s3://deployment-us-east-1-lambdas-1/4a43145c0ac9ed4f019c23abd522a913
       Handler: io.sengage.webservice.function.SendMessage
       MemorySize: 256
       Policies:
@@ -255,6 +299,27 @@ Resources:
         - - integrations
           - Ref: SendInteg
     Type: AWS::ApiGatewayV2::Route
+  SengageWSLambdaFunction:
+    Properties:
+      CodeUri: s3://deployment-us-east-1-lambdas-1/4a43145c0ac9ed4f019c23abd522a913
+      FunctionName: SengageWSLambdaFunction
+      Handler: io.sengage.webservice.function.RequestHandler
+      MemorySize: 320
+      Role:
+        Fn::GetAtt:
+        - DefaultLambdaInvocationRole
+        - Arn
+      Runtime: java8
+      Timeout: 120
+    Type: AWS::Serverless::Function
+  SengageWSWebService:
+    Properties:
+      DefinitionUri: s3://deployment-us-east-1-lambdas-1/7e92f810256867f1cce546e230c89ce5
+      EndpointConfiguration: REGIONAL
+      StageName:
+        Ref: DeploymentStage
+      TracingEnabled: false
+    Type: AWS::Serverless::Api
   SengageWebSocket:
     Properties:
       Name: SengageWSWebService

@@ -7,16 +7,18 @@ Description: >
   functions needed to demonstrate the Websocket protocol on API Gateway.
 
 Globals:
-  Api:
-    Cors:
-      AllowMethods: "'GET,HEAD,POST,PUT,OPTIONS,PATCH'"
-      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with'"
-      AllowOrigin: "'*'"
+  #Api:
+  #  Cors:
+  #    AllowMethods: "'GET,HEAD,POST,PUT,OPTIONS,PATCH'"
+  #    AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with'"
+  #    AllowOrigin: "'*'"
   Function:
     Environment:
       Variables:
+        ExtensionOwnerTwitchId: "79606633"
+        ClientId: "cdawvhusl1d795u9lddads9w0ar7w9"
+        ExtensionVersion: "0.0.1"
         TableName: "Connections"
-
 
 Parameters:
   DeploymentStage:
@@ -220,6 +222,79 @@ Resources:
        #https://docs.aws.amazon.com/apigateway/latest/developerguide/request-response-data-mappings.html
         - "route.request.querystring.Auth"
       
+# Http API LAMBDAS
+  SengageWSWebService:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      StageName: !Ref DeploymentStage
+      DefinitionUri: ./swagger.yaml
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: false # TODO enable xray
+  
+  SengageWSLambdaFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: io.sengage.webservice.function.RequestHandler
+      FunctionName: SengageWSLambdaFunction
+      Runtime: java8
+      Timeout: 120
+      MemorySize: 320
+      Role: !GetAtt DefaultLambdaInvocationRole.Arn
+      CodeUri: ./target/webservice-1.0.0.jar
+      #Events:
+      #  SengageWSWebService:
+      #      Type: Api
+      #      Properties:
+      #          RestApiId: !Ref SengageWSWebService
+      #          Path: /{any+}
+      #          Method: ANY
+  #IAM
+  DefaultLambdaInvocationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Policies:
+      - PolicyName: LambdaInvocationRolePolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStream
+            - cloudwatch:PutMetricData
+            Resource: "*"
+  ApiGatewayLambdaInvokePermission:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+             - lambda.amazonaws.com
+             - apigateway.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: ApiGatewayLambdaInvokePermission
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: 
+            - lambda:InvokeFunction
+            Resource: "*"
 
 Outputs:
   ConnectionsTableArn:

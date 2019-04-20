@@ -90,12 +90,12 @@
 	  <artifactId>dagger</artifactId>
 	  <version>2.16</version>
     </dependency>
-      <dependency>
-            <groupId>com.google.dagger</groupId>
-            <artifactId>dagger-compiler</artifactId>
-            <version>2.16</version>
-            <optional>true</optional>
-        </dependency>
+    <dependency>
+      <groupId>com.google.dagger</groupId>
+      <artifactId>dagger-compiler</artifactId>
+      <version>2.16</version>
+      <optional>true</optional>
+    </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
@@ -110,6 +110,12 @@
 	  <groupId>com.google.http-client</groupId>
 	  <artifactId>google-http-client-gson</artifactId>
 	  <version>1.23.0</version>
+	  <!--  remove in favor of the other lib -->
     </dependency>
+    	<dependency>
+	    <groupId>com.auth0</groupId>
+	    <artifactId>java-jwt</artifactId>
+	    <version>3.4.0</version>
+	</dependency>
   </dependencies>
 </project>
