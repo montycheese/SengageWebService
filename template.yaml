@@ -7,11 +7,6 @@ Description: >
   functions needed to demonstrate the Websocket protocol on API Gateway.
 
 Globals:
-  #Api:
-  #  Cors:
-  #    AllowMethods: "'GET,HEAD,POST,PUT,OPTIONS,PATCH'"
-  #    AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with'"
-  #    AllowOrigin: "'*'"
   Function:
     Environment:
       Variables:

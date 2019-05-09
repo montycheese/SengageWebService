@@ -192,7 +192,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Authorizer
   LambdaAuthorizerFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/ea615f5933e5ee32bc3f9a37b3ffec94
+      CodeUri: s3://deployment-us-east-1-lambdas-1/f462b9f894198a3a84cf3648f55e40da
       Handler: io.sengage.webservice.function.LambdaAuthorizer
       MemorySize: 256
       Policies:
@@ -213,7 +213,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnConnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/ea615f5933e5ee32bc3f9a37b3ffec94
+      CodeUri: s3://deployment-us-east-1-lambdas-1/f462b9f894198a3a84cf3648f55e40da
       Handler: io.sengage.webservice.function.OnConnect
       MemorySize: 256
       Policies:
@@ -233,7 +233,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnDisconnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/ea615f5933e5ee32bc3f9a37b3ffec94
+      CodeUri: s3://deployment-us-east-1-lambdas-1/f462b9f894198a3a84cf3648f55e40da
       Handler: io.sengage.webservice.function.OnDisconnect
       MemorySize: 256
       Policies:
@@ -262,7 +262,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Integration
   SendMessageFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/ea615f5933e5ee32bc3f9a37b3ffec94
+      CodeUri: s3://deployment-us-east-1-lambdas-1/f462b9f894198a3a84cf3648f55e40da
       Handler: io.sengage.webservice.function.SendMessage
       MemorySize: 256
       Policies:
@@ -301,7 +301,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
   SengageWSLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/ea615f5933e5ee32bc3f9a37b3ffec94
+      CodeUri: s3://deployment-us-east-1-lambdas-1/f462b9f894198a3a84cf3648f55e40da
       FunctionName: SengageWSLambdaFunction
       Handler: io.sengage.webservice.function.RequestHandler
       MemorySize: 320

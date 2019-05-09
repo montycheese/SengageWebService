@@ -1,32 +1,57 @@
 package io.sengage.webservice.dagger;
 
+import java.time.Instant;
 import java.util.regex.Pattern;
 
 import javax.inject.Singleton;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapterFactory;
+
 import io.sengage.webservice.function.GetExtensionData;
-import io.sengage.webservice.function.PostExtensionData;
+import io.sengage.webservice.function.PutExtensionData;
+import io.sengage.webservice.function.UpdateGameState;
+import io.sengage.webservice.model.GameSpecificState;
 import io.sengage.webservice.router.LambdaRouter;
 import io.sengage.webservice.router.Resource;
+import io.sengage.webservice.sengames.model.SendLineRequest;
+import io.sengage.webservice.utils.gson.InstantTypeConverter;
+import io.sengage.webservice.utils.gson.RuntimeTypeAdapterFactory;
 import dagger.Module;
 import dagger.Provides;
 
 @Module
 public class BaseModule {
 
+
 	@Provides
 	@Singleton
 	static LambdaRouter provideLambdaRouter() {
 		return new LambdaRouter()
 		    .registerActivity(Resource.builder()
-		    		.className(GetExtensionData.class.getName())
-		    		.httpMethod("GET")
-		    		.pattern(Pattern.compile("^/extensiondata$"))
-		    		.build())
-		    .registerActivity(Resource.builder()
-		    		.className(PostExtensionData.class.getName())
+		    		.className(UpdateGameState.class.getName())
 		    		.httpMethod("POST")
-		    		.pattern(Pattern.compile("^/extensiondata$"))
+		    		.pattern(Pattern.compile("^/game/([^\\/]*)$"))
 		    		.build());
 	}
+	
+	@Provides
+	@Singleton
+	static Gson provideGson(TypeAdapterFactory typeAdapterFactory) {
+		return new GsonBuilder()
+		.registerTypeAdapter(Instant.class, new InstantTypeConverter())
+		.registerTypeAdapterFactory(typeAdapterFactory)
+		.serializeNulls()
+		.create();
+	}
+	
+	@Provides
+	@Singleton
+	static TypeAdapterFactory provideRuntimeAdapterFactory() {
+		return RuntimeTypeAdapterFactory
+				.of(GameSpecificState.class, "type")
+				.registerSubtype(SendLineRequest.class, "SendLineRequest");
+	}
+
 }
