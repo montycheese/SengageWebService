@@ -3,6 +3,8 @@ package io.sengage.webservice.twitch;
 import io.sengage.webservice.auth.JwtProvider;
 import io.sengage.webservice.auth.TwitchJWTField;
 import io.sengage.webservice.dagger.ExtensionModule;
+import io.sengage.webservice.model.GameItem;
+import io.sengage.webservice.sengames.model.pubsub.JoinGameMessage;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -54,21 +56,20 @@ public class TwitchClient {
 		this.jwtProvider = jwtProvider;
 	}
 	
-	public boolean notifyChannelGameStarted() {
-		String channelId = message.getChannelId();
+	public boolean notifyChannelGameStarted(GameItem gameItem) {
 		
 		boolean success = false;
-		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);		
+		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, gameItem.getChannelId());		
 		GenericUrl url = new GenericUrl(urlString);
 
 		HttpContent content = new JsonHttpContent(jsonFactory, 
 				PubSubMessage.builder()
 				.contentType(PubSubMessage.JSON)
 				.targets(Arrays.asList("broadcast"))
-				.message(gson.toJson(PubSubMessage.Payload.from(message), PubSubMessage.Payload.class))
+				.message(gson.toJson(JoinGameMessage.from(gameItem)))
 				.build());
 		
-		String authToken = jwtProvider.signJwt(getClaimsForAudioPubsub(channelId));
+		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(gameItem.getChannelId()));
 		
 		try {
 			HttpRequest request = requestFactory.buildPostRequest(url, content);
@@ -80,24 +81,19 @@ public class TwitchClient {
 			response.disconnect();
 		} catch (IOException e) {
 			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
-					channelId, urlString), e);
+					gameItem.getChannelId(), urlString), e);
 		}
 		return success;
 	}
 	
-	public boolean sendExtensionChatMessage(Message message) {
-		String channelId = message.getChannelId();
+	public boolean sendExtensionChatMessage(String channelId, String message) {
 		boolean success = false;
 		String urlString = String.format("%s/extensions/%s/%s/channels/%s/chat", 
 				TWITCH_API_BASE_URL, clientId, extensionVersion, channelId);
 		GenericUrl url = new GenericUrl(urlString);
+
 		
-		String chatMessage = "A message is being broadcast to the channel!";
-		if (message.getUserName() != null) {
-			chatMessage = String.format("%s is broadcasting a message to the channel!", message.getUserName());
-		}
-		
-		HttpContent content = new JsonHttpContent(jsonFactory,  new ChatMessage(chatMessage));
+		HttpContent content = new JsonHttpContent(jsonFactory,  new ChatMessage(message));
 		
 		String authToken = jwtProvider.signJwt(getClaimsForExtensionChatMessage(channelId));
 		
@@ -117,7 +113,7 @@ public class TwitchClient {
 		return success;
 	} 
 	
-	private Map<TwitchJWTField, Object> getClaimsForAudioPubsub(String channelId) {
+	private Map<TwitchJWTField, Object> getClaimsForChannelMessage(String channelId) {
 		Map<String, Object> pubsubPerms = new HashMap<>();
 		pubsubPerms.put("send", Arrays.asList("broadcast"));
 		

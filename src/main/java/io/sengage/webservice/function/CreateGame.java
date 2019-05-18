@@ -9,7 +9,7 @@ import io.sengage.webservice.auth.JwtUtils;
 import io.sengage.webservice.model.CreateGameRequest;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
-import io.sengage.webservice.model.StreamInfo;
+import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.sengames.handler.CreateGameHandler;
 import io.sengage.webservice.sengames.handler.CreateGameHandlerFactory;
 
@@ -37,18 +37,18 @@ public class CreateGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 		logger = context.getLogger();
 		logger.log("Request: " + serverlessInput.getBody());
 		
-		DecodedJWT jwt = authHelper.authenticateRequestAndVerifyToken(parseAuthTokenFromHeaders(serverlessInput.getHeaders()));
+		DecodedJWT jwt = authHelper.authenticateCreateGameRequest(parseAuthTokenFromHeaders(serverlessInput.getHeaders()));
 		
 		CreateGameRequest request = gson.fromJson(serverlessInput.getBody(), CreateGameRequest.class);
 		
 		CreateGameHandler handler = createGameHandlerFactory.get(request.getGame());
 		
-		StreamInfo streamInfo = JwtUtils.getStreamInfo(jwt);
+		StreamContext streamContext = JwtUtils.getStreamContext(jwt);
 		
 		String gameId = handler.handleCreateGame(request.getGame(), 
 				request.getGameSpecificParameters(),
 				request.getDuration(), 
-				streamInfo);
+				streamContext);
 		
 		return ServerlessOutput.builder()
 				.headers(getOutputHeaders())

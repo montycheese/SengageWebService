@@ -23,16 +23,16 @@ public class GameItem {
 	@DynamoDBHashKey(attributeName = GAME_ID_ATTR)
 	private String gameId;
 	private String channelId;
-	private String streamerUserId;
-	private String streamerUserName;
-	private String streamerOpaqueId;
+	private String userId;
+	private String userName;
+	private String opaqueId;
 	private Game game;
 	private GameStatus gameStatus;
 	private Instant createdAt;
 	private Instant modifiedAt;
 	private int duration;
 	
-	public static GameItem from(Game game, int duration, StreamInfo streamInfo) {
+	public static GameItem from(Game game, int duration, StreamContext streamContext) {
 		Instant now = Instant.now();
 		
 		return GameItem.builder()
@@ -40,9 +40,9 @@ public class GameItem {
 		.game(game)
 		.duration(duration)
 		.gameStatus(GameStatus.INIT)
-		.streamerOpaqueId(streamInfo.getStreamerOpaqueId())
-		.channelId(streamInfo.getChannelId())
-		.streamerUserId(streamInfo.getStreamerUserId())
+		.opaqueId(streamContext.getOpaqueId())
+		.channelId(streamContext.getChannelId())
+		.userId(streamContext.getUserId()) // todo add username
 		.createdAt(now)
 		.modifiedAt(now)
 		.build();

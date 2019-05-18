@@ -7,9 +7,9 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 @Data
-public class StreamInfo {
+public class StreamContext {
 	private String channelId;
-	private String streamerUserId;
-	private String streamerUserName;
-	private String streamerOpaqueId;
+	private String userId;
+	private String userName;
+	private String opaqueId;
 }

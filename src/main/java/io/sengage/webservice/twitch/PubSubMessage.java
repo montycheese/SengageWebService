@@ -25,11 +25,4 @@ class PubSubMessage {
 	
 	@Key
 	public List<String> targets;
-	
-	@Data
-	@Builder
-	@AllArgsConstructor
-	static class Payload {
-	}
-	
 }
