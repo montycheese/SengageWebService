@@ -1,6 +1,7 @@
 package io.sengage.webservice.auth;
 
 import static io.sengage.webservice.dagger.ExtensionModule.EXTENSION_SECRET;
+import io.sengage.webservice.model.StreamInfo;
 
 import java.util.Base64;
 
@@ -30,5 +31,13 @@ public class JwtUtils {
                 .acceptLeeway(TOKEN_EXPIRATION_LEEWAY_SECONDS)
                 .build();
 	    return verifier.verify(token);
+	}
+	
+	public static StreamInfo getStreamInfo(DecodedJWT jwt) {
+		return StreamInfo.builder()
+		.channelId(TwitchJWTField.CHANNEL_ID.fromJWT(jwt))
+		.streamerUserId(TwitchJWTField.USER_ID.fromJWT(jwt))
+		.streamerOpaqueId(TwitchJWTField.OPAQUE_USER_ID.fromJWT(jwt))
+		.build();
 	}
 }

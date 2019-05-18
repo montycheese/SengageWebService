@@ -1,5 +1,8 @@
 package io.sengage.webservice.function;
 
+import io.sengage.webservice.auth.TwitchJWTField;
+import io.sengage.webservice.model.StreamInfo;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -7,6 +10,7 @@ import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
 public abstract class BaseLambda<I, O> implements RequestHandler<I,O> {
 	
@@ -35,5 +39,13 @@ public abstract class BaseLambda<I, O> implements RequestHandler<I,O> {
 			throw new IllegalStateException("JWT was not provided or malformed");
 		}
 		return jwtToken;
+	}
+	
+	protected StreamInfo getStreamInfo(DecodedJWT jwt) {
+		return StreamInfo.builder()
+		.channelId(TwitchJWTField.CHANNEL_ID.fromJWT(jwt))
+		.streamerUserId(TwitchJWTField.USER_ID.fromJWT(jwt))
+		.streamerOpaqueId(TwitchJWTField.OPAQUE_USER_ID.fromJWT(jwt))
+		.build();
 	}
 }

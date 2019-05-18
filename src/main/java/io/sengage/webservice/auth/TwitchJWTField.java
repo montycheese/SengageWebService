@@ -1,5 +1,7 @@
 package io.sengage.webservice.auth;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -16,4 +18,8 @@ public enum TwitchJWTField {
 	
 	@Getter
 	public final String value;
+	
+	public String fromJWT(DecodedJWT jwt) {
+		return jwt.getClaim(this.value).asString();
+	}
 }
