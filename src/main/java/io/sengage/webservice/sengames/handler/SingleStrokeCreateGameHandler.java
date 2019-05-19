@@ -8,6 +8,7 @@ import com.amazonaws.services.cloudwatchevents.model.PutEventsRequestEntry;
 import com.amazonaws.services.cloudwatchevents.model.PutEventsResult;
 import com.google.gson.Gson;
 
+import io.sengage.webservice.events.EventDetail;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameItem.GameItemDigest;
@@ -15,7 +16,6 @@ import io.sengage.webservice.model.GameSpecificParameters;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.persistence.GameDataProvider;
-import io.sengage.webservice.sengames.model.EventDetail;
 import io.sengage.webservice.sengames.model.GameToWaitForPlayersToJoinDurationMapper;
 import io.sengage.webservice.twitch.TwitchClient;
 

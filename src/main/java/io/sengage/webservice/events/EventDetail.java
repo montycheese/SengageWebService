@@ -1,4 +1,4 @@
-package io.sengage.webservice.sengames.model;
+package io.sengage.webservice.events;
 
 public enum EventDetail {
 	WAITING_FOR_PLAYERS_COMPLETE,
