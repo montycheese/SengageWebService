@@ -47,4 +47,15 @@ public class GameItem {
 		.modifiedAt(now)
 		.build();
 	}
+	
+	public GameItemDigest toDigest() {
+		return new GameItemDigest(gameId);
+	}
+	
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class GameItemDigest {
+		private String gameId;
+	}
 }
