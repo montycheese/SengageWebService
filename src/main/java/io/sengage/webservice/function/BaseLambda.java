@@ -1,7 +1,7 @@
 package io.sengage.webservice.function;
 
 import io.sengage.webservice.auth.TwitchJWTField;
-import io.sengage.webservice.model.StreamInfo;
+import io.sengage.webservice.model.StreamContext;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -41,11 +41,11 @@ public abstract class BaseLambda<I, O> implements RequestHandler<I,O> {
 		return jwtToken;
 	}
 	
-	protected StreamInfo getStreamInfo(DecodedJWT jwt) {
-		return StreamInfo.builder()
+	protected StreamContext getStreamInfo(DecodedJWT jwt) {
+		return StreamContext.builder()
 		.channelId(TwitchJWTField.CHANNEL_ID.fromJWT(jwt))
-		.streamerUserId(TwitchJWTField.USER_ID.fromJWT(jwt))
-		.streamerOpaqueId(TwitchJWTField.OPAQUE_USER_ID.fromJWT(jwt))
+		.userId(TwitchJWTField.USER_ID.fromJWT(jwt))
+		.opaqueId(TwitchJWTField.OPAQUE_USER_ID.fromJWT(jwt))
 		.build();
 	}
 }

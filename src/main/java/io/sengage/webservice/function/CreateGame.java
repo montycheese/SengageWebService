@@ -6,6 +6,8 @@ import org.apache.http.HttpStatus;
 
 import io.sengage.webservice.auth.AuthorizationHelper;
 import io.sengage.webservice.auth.JwtUtils;
+import io.sengage.webservice.dagger.DaggerExtensionComponent;
+import io.sengage.webservice.dagger.ExtensionComponent;
 import io.sengage.webservice.model.CreateGameRequest;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
@@ -31,6 +33,11 @@ public class CreateGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 	AuthorizationHelper authHelper;
 	
 	private LambdaLogger logger;
+	
+	public CreateGame() {
+		ExtensionComponent component = DaggerExtensionComponent.create();
+		component.injectCreateGame(this);
+	}
 	
 	@Override
 	public ServerlessOutput handleRequest(ServerlessInput serverlessInput, Context context) {

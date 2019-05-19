@@ -9,6 +9,7 @@ import com.amazonaws.services.cloudwatchevents.model.PutEventsResult;
 import com.google.gson.Gson;
 
 import io.sengage.webservice.events.EventDetail;
+import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameItem.GameItemDigest;
@@ -48,7 +49,16 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 		item = item.toBuilder().gameStatus(GameStatus.WAITING_FOR_PLAYERS).build();
 		
 		twitchClient.notifyChannelGameStarted(item);
-		gameDataProvider.updateGame(item);
+		try {
+			gameDataProvider.updateGame(item);
+		} catch (ItemVersionMismatchException e) {
+			System.out.println("Item version mismatch while trying to update game: " + item.getGameId());
+			// have a event or error path that gracesfully fails a game if it encounters error state
+			item = gameDataProvider.getGame(item.getGameId()).get();
+			item.setGameStatus(GameStatus.ERROR_STATE);
+			throw new RuntimeException("Item version mismatch while trying to update game, moving game to error state", e);
+			
+		}
 		
 		Date gameStartTime = 
 				new Date(item.getCreatedAt().plusMillis(GameToWaitForPlayersToJoinDurationMapper.get(item.getGame())).toEpochMilli());
@@ -64,7 +74,10 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 		
 		if (response.getFailedEntryCount() > 0) {
 			System.out.println("Error creating event to start game: " + item.getGameId() + " failure count: "  + response.getFailedEntryCount());
-			gameDataProvider.updateGame(item.toBuilder().gameStatus(GameStatus.ERROR_STATE).build());
+			try {
+				gameDataProvider.updateGame(item.toBuilder().gameStatus(GameStatus.ERROR_STATE).build());
+			} catch (ItemVersionMismatchException e) {
+			}
 			throw new IllegalStateException("Failed to create event to start game");
 			// notify channel that game ended or failed to start?
 		}

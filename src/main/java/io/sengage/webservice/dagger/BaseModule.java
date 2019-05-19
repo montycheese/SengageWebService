@@ -9,8 +9,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
-import io.sengage.webservice.function.GetExtensionData;
-import io.sengage.webservice.function.PutExtensionData;
+import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.UpdateGameState;
 import io.sengage.webservice.model.GameSpecificState;
 import io.sengage.webservice.router.LambdaRouter;
@@ -29,9 +28,14 @@ public class BaseModule {
 	@Singleton
 	static LambdaRouter provideLambdaRouter() {
 		return new LambdaRouter()
+			.registerActivity(Resource.builder()
+					.className(CreateGame.class.getName())
+					.httpMethod("POST")
+					.pattern(Pattern.compile("^/game$"))
+					.build())
 		    .registerActivity(Resource.builder()
 		    		.className(UpdateGameState.class.getName())
-		    		.httpMethod("POST")
+		    		.httpMethod("PUT")
 		    		.pattern(Pattern.compile("^/game/([^\\/]*)$"))
 		    		.build());
 	}
