@@ -246,7 +246,7 @@ Resources:
   SengamesCWEventHandlerLambdaFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Handler: io.sengage.webservice.function.RequestHandler # TODO make custom lambda
+      Handler: io.sengage.webservice.events.CWEventsHandler
       FunctionName: SengamesCWEventHandlerLambdaFunction
       Runtime: java8
       Timeout: 120
