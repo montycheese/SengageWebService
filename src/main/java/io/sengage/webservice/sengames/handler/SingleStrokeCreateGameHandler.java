@@ -6,6 +6,7 @@ import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
 import com.amazonaws.services.cloudwatchevents.model.PutEventsRequest;
 import com.amazonaws.services.cloudwatchevents.model.PutEventsRequestEntry;
 import com.amazonaws.services.cloudwatchevents.model.PutEventsResult;
+import com.amazonaws.services.cloudwatchevents.model.PutEventsResultEntry;
 import com.google.gson.Gson;
 
 import io.sengage.webservice.events.EventDetail;
@@ -21,6 +22,8 @@ import io.sengage.webservice.sengames.model.GameToWaitForPlayersToJoinDurationMa
 import io.sengage.webservice.twitch.TwitchClient;
 
 public class SingleStrokeCreateGameHandler extends CreateGameHandler {
+	
+	private static final String EVENT_SOURCE = "SengamesWebService";
 	
 	private final GameDataProvider gameDataProvider;
 	private final TwitchClient twitchClient;
@@ -46,9 +49,17 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 		gameDataProvider.createGame(item);
 		// send pubsub message
 		
-		item = item.toBuilder().gameStatus(GameStatus.WAITING_FOR_PLAYERS).build();
+		item = item.toBuilder().gameStatus(GameStatus.WAITING_FOR_PLAYERS)
+				.version(1L)
+				.build();
 		
-		twitchClient.notifyChannelGameStarted(item);
+		try {
+			twitchClient.notifyChannelGameStarted(item);	
+		} catch (Exception e) {
+			// have a event or error path that gracesfully fails a game if it encounters error state
+			throw e;
+		}
+		
 		try {
 			gameDataProvider.updateGame(item);
 		} catch (ItemVersionMismatchException e) {
@@ -68,12 +79,16 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 		.withEntries(new PutEventsRequestEntry()
 			.withTime(gameStartTime)
 			.withDetail(gson.toJson(item.toDigest(), GameItemDigest.class))
+			.withSource(EVENT_SOURCE)
 			.withDetailType(EventDetail.WAITING_FOR_PLAYERS_COMPLETE.name())
 		);
 		PutEventsResult response = cwe.putEvents(eventsRequest);
 		
 		if (response.getFailedEntryCount() > 0) {
 			System.out.println("Error creating event to start game: " + item.getGameId() + " failure count: "  + response.getFailedEntryCount());
+			for (PutEventsResultEntry entry: response.getEntries()) {
+				System.out.println("Error: " + entry.getErrorMessage());
+			}
 			try {
 				gameDataProvider.updateGame(item.toBuilder().gameStatus(GameStatus.ERROR_STATE).build());
 			} catch (ItemVersionMismatchException e) {

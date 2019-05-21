@@ -70,7 +70,7 @@ public class TwitchClient {
 				.build());
 		
 		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(gameItem.getChannelId()));
-		
+
 		try {
 			HttpRequest request = requestFactory.buildPostRequest(url, content);
 			initHttpHeaders(request, authToken);
