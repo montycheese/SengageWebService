@@ -75,6 +75,7 @@ public class GameItem {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class GameItemDigest {
+		public static final String GAME_ID_ATTR_KEY = "gameId";
 		private String gameId;
 	}
 }
