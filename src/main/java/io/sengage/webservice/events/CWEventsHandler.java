@@ -1,14 +1,17 @@
 package io.sengage.webservice.events;
 
+import io.sengage.webservice.function.BaseLambda;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 
-public class CWEventsHandler {
+public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 
 	private LambdaLogger logger;
 	
-	public void handleEvent(ScheduledEvent event, Context context) {
+	@Override
+	public Void handleRequest(ScheduledEvent event, Context context) {
 		logger = context.getLogger();
 		logger.log("handleEvent(): input: " + event);
 		
@@ -23,5 +26,7 @@ public class CWEventsHandler {
 			break;
 		
 		}
+		
+		return null;
 	}
 }
