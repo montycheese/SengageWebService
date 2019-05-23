@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import io.sengage.webservice.auth.AuthorizationHelper;
 import io.sengage.webservice.dagger.DaggerExtensionComponent;
 import io.sengage.webservice.dagger.ExtensionComponent;
+import io.sengage.webservice.model.JoinGameRequest;
 import io.sengage.webservice.model.JoinGameResponse;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
@@ -19,8 +20,6 @@ import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.sengames.handler.JoinGameHandler;
 
 public class JoinGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
-	
-	private static final String GAME_ID_PATH_PARAM_KEY = "gameId";
 	
 	@Inject
 	Gson gson;
@@ -42,7 +41,7 @@ public class JoinGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 	public ServerlessOutput handleRequest(ServerlessInput serverlessInput, Context context) {
 		// TODO Auto-generated method stub
 		logger = context.getLogger();
-		logger.log("JoinGame(): input: " + serverlessInput.getBody());
+		logger.log("JoinGame(): input: " + serverlessInput);
 		
 		
 		DecodedJWT jwt = authHelper.authenticateRequestAndVerifyToken(parseAuthTokenFromHeaders(serverlessInput.getHeaders()));
@@ -50,11 +49,11 @@ public class JoinGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 		// todo addd username here
 		StreamContext streamContext = getStreamInfo(jwt);
 		
-		String gameId = serverlessInput.getPathParameters().get(GAME_ID_PATH_PARAM_KEY);
+		JoinGameRequest request = gson.fromJson(serverlessInput.getBody(), JoinGameRequest.class);
 		boolean joinedSuccessfully = true;
 		String failureReason = null;
 		try {
-			joinGameHandler.handleJoinGame(gameId, streamContext);
+			joinGameHandler.handleJoinGame(request.getGameId(), streamContext);
 			// todo catch certain exceptions only
 		} catch (Exception e) {
 			joinedSuccessfully = false;
