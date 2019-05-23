@@ -1,7 +1,9 @@
 package io.sengage.webservice.dagger;
 
 import io.sengage.webservice.persistence.GameDataProvider;
+import io.sengage.webservice.persistence.PlayerDataProvider;
 import io.sengage.webservice.persistence.ddb.DynamoDBGameDataProvider;
+import io.sengage.webservice.persistence.ddb.DynamoDBPlayerDataProvider;
 
 import javax.inject.Singleton;
 
@@ -19,6 +21,12 @@ public class DataModule {
 	@Singleton
 	static GameDataProvider provideGameDataProvider(DynamoDBMapper mapper) {
 		return new DynamoDBGameDataProvider(mapper);
+	}
+	
+	@Provides
+	@Singleton
+	static PlayerDataProvider providePlayerDataProvider(DynamoDBMapper mapper) {
+		return new DynamoDBPlayerDataProvider(mapper);
 	}
 	
 	@Provides

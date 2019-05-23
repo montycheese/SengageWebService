@@ -343,6 +343,24 @@ Resources:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
       TableName: Game
+      
+  PlayerTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: GameId
+          AttributeType: S
+        - AttributeName: OpaqueId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: GameId
+          KeyType: HASH
+        - AttributeName: OpaqueId
+          KeyType: RANGE
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: Player
 
 Outputs:
   ConnectionsTableArn:

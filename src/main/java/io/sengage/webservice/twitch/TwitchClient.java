@@ -5,6 +5,7 @@ import io.sengage.webservice.auth.TwitchJWTField;
 import io.sengage.webservice.dagger.ExtensionModule;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.sengames.model.pubsub.JoinGameMessage;
+import io.sengage.webservice.sengames.model.pubsub.StartGameMessage;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,7 +57,7 @@ public class TwitchClient {
 		this.jwtProvider = jwtProvider;
 	}
 	
-	public boolean notifyChannelGameStarted(GameItem gameItem) {
+	public boolean notifyChannelJoinGame(GameItem gameItem) {
 		
 		boolean success = false;
 		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, gameItem.getChannelId());		
@@ -67,6 +68,36 @@ public class TwitchClient {
 				.contentType(PubSubMessage.JSON)
 				.targets(Arrays.asList("broadcast"))
 				.message(gson.toJson(JoinGameMessage.from(gameItem)))
+				.build());
+		
+		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(gameItem.getChannelId()));
+
+		try {
+			HttpRequest request = requestFactory.buildPostRequest(url, content);
+			initHttpHeaders(request, authToken);
+			
+			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
+			HttpResponse response =  request.execute();
+			success = response.isSuccessStatusCode();
+			response.disconnect();
+		} catch (IOException e) {
+			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
+					gameItem.getChannelId(), urlString), e);
+		}
+		return success;
+	}
+	
+	public boolean notifyChannelGameStarted(GameItem gameItem) {
+		
+		boolean success = false;
+		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, gameItem.getChannelId());		
+		GenericUrl url = new GenericUrl(urlString);
+
+		HttpContent content = new JsonHttpContent(jsonFactory, 
+				PubSubMessage.builder()
+				.contentType(PubSubMessage.JSON)
+				.targets(Arrays.asList("broadcast"))
+				.message(gson.toJson(StartGameMessage.from(gameItem)))
 				.build());
 		
 		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(gameItem.getChannelId()));

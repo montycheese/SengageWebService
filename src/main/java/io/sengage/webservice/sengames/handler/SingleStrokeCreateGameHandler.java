@@ -20,10 +20,9 @@ import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.sengames.model.GameToWaitForPlayersToJoinDurationMapper;
 import io.sengage.webservice.twitch.TwitchClient;
+import io.sengage.webservice.utils.Constants;
 
 public class SingleStrokeCreateGameHandler extends CreateGameHandler {
-	
-	private static final String EVENT_SOURCE = "SengamesWebService";
 	
 	private final GameDataProvider gameDataProvider;
 	private final TwitchClient twitchClient;
@@ -54,7 +53,7 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 				.build();
 		
 		try {
-			twitchClient.notifyChannelGameStarted(item);	
+			twitchClient.notifyChannelJoinGame(item);	
 		} catch (Exception e) {
 			// have a event or error path that gracesfully fails a game if it encounters error state
 			throw e;
@@ -79,7 +78,7 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 		.withEntries(new PutEventsRequestEntry()
 			.withTime(gameStartTime)
 			.withDetail(gson.toJson(item.toDigest(), GameItemDigest.class))
-			.withSource(EVENT_SOURCE)
+			.withSource(Constants.CWE_EVENT_SOURCE)
 			.withDetailType(EventDetail.WAITING_FOR_PLAYERS_COMPLETE.name())
 		);
 		PutEventsResult response = cwe.putEvents(eventsRequest);
@@ -93,7 +92,7 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 				gameDataProvider.updateGame(item.toBuilder().gameStatus(GameStatus.ERROR_STATE).build());
 			} catch (ItemVersionMismatchException e) {
 			}
-			throw new IllegalStateException("Failed to create event to start game");
+			throw new IllegalStateException("Failed to create event to notify users to join game");
 			// notify channel that game ended or failed to start?
 		}
 		
