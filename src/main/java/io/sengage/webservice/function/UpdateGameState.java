@@ -1,7 +1,5 @@
 package io.sengage.webservice.function;
 
-import java.util.UUID;
-
 import javax.inject.Inject;
 
 import org.apache.http.HttpStatus;
@@ -15,11 +13,14 @@ import io.sengage.webservice.auth.AuthorizationHelper;
 import io.sengage.webservice.auth.TwitchJWTField;
 import io.sengage.webservice.dagger.DaggerExtensionComponent;
 import io.sengage.webservice.dagger.ExtensionComponent;
+import io.sengage.webservice.exception.GameCompletedException;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
+import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.model.UpdateGameStateRequest;
 import io.sengage.webservice.sengames.handler.GameUpdateHandler;
 import io.sengage.webservice.sengames.handler.GameUpdateHandlerFactory;
+import io.sengage.webservice.sengames.model.HandleGameUpdateResponse;
 
 public class UpdateGameState extends BaseLambda<ServerlessInput, ServerlessOutput> {
 
@@ -55,14 +56,22 @@ public class UpdateGameState extends BaseLambda<ServerlessInput, ServerlessOutpu
 		
 		
 		UpdateGameStateRequest request = gson.fromJson(serverlessInput.getBody(), UpdateGameStateRequest.class);
+		StreamContext streamContext = getStreamInfo(decodedJWT);
+		streamContext.setUserName(request.getUsername());
 		
 		GameUpdateHandler handler = handlerFactory.get(request.getGame());
-		handler.handleGameUpdate(request.getGameSpecificState());
+		HandleGameUpdateResponse response = null;
+		
+		try {
+			response = handler.handleGameUpdate(request.getGameId(), request.getGameSpecificState(), streamContext);
+		} catch (GameCompletedException e) {
+			throw new RuntimeException(e);
+		}
 		
         return ServerlessOutput.builder()
         		.headers(getOutputHeaders())
         		.statusCode(HttpStatus.SC_OK)
-        		.body(UUID.randomUUID().toString())
+        		.body(gson.toJson(response, response.getClass()))
         		.build();
 	}
 }

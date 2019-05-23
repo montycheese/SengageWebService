@@ -207,7 +207,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Authorizer
   LambdaAuthorizerFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/7b3e4fa9695fc7eebff3ff94327767ef
+      CodeUri: s3://deployment-us-east-1-lambdas-1/55f9a5866a63b10f01ae51c8c182b8d9
       Handler: io.sengage.webservice.function.LambdaAuthorizer
       MemorySize: 256
       Policies:
@@ -228,7 +228,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnConnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/7b3e4fa9695fc7eebff3ff94327767ef
+      CodeUri: s3://deployment-us-east-1-lambdas-1/55f9a5866a63b10f01ae51c8c182b8d9
       Handler: io.sengage.webservice.function.OnConnect
       MemorySize: 256
       Policies:
@@ -248,7 +248,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnDisconnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/7b3e4fa9695fc7eebff3ff94327767ef
+      CodeUri: s3://deployment-us-east-1-lambdas-1/55f9a5866a63b10f01ae51c8c182b8d9
       Handler: io.sengage.webservice.function.OnDisconnect
       MemorySize: 256
       Policies:
@@ -284,11 +284,22 @@ Resources:
         AttributeType: S
       - AttributeName: OpaqueId
         AttributeType: S
+      - AttributeName: PlayerStatus
+        AttributeType: S
       KeySchema:
       - AttributeName: GameId
         KeyType: HASH
       - AttributeName: OpaqueId
         KeyType: RANGE
+      LocalSecondaryIndexes:
+      - IndexName: GameId-PlayerStatus-Index
+        KeySchema:
+        - AttributeName: GameId
+          KeyType: HASH
+        - AttributeName: PlayerStatus
+          KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
       ProvisionedThroughput:
         ReadCapacityUnits: '1'
         WriteCapacityUnits: '1'
@@ -305,7 +316,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Integration
   SendMessageFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/7b3e4fa9695fc7eebff3ff94327767ef
+      CodeUri: s3://deployment-us-east-1-lambdas-1/55f9a5866a63b10f01ae51c8c182b8d9
       Handler: io.sengage.webservice.function.SendMessage
       MemorySize: 256
       Policies:
@@ -344,7 +355,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
   SengageWSLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/7b3e4fa9695fc7eebff3ff94327767ef
+      CodeUri: s3://deployment-us-east-1-lambdas-1/55f9a5866a63b10f01ae51c8c182b8d9
       FunctionName: SengageWSLambdaFunction
       Handler: io.sengage.webservice.function.RequestHandler
       MemorySize: 320
@@ -371,7 +382,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Api
   SengamesCWEventHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/7b3e4fa9695fc7eebff3ff94327767ef
+      CodeUri: s3://deployment-us-east-1-lambdas-1/55f9a5866a63b10f01ae51c8c182b8d9
       FunctionName: SengamesCWEventHandlerLambdaFunction
       Handler: io.sengage.webservice.events.CWEventsHandler
       MemorySize: 320

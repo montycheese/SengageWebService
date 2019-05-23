@@ -8,6 +8,7 @@ import io.sengage.webservice.exception.ItemAlreadyExistsException;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.Player;
+import io.sengage.webservice.model.PlayerStatus;
 import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
@@ -42,6 +43,7 @@ public class JoinGameHandler {
 				.opaqueId(streamContext.getOpaqueId())
 				.userId(streamContext.getUserId())
 				.userName(streamContext.getUserName())
+				.playerStatus(PlayerStatus.PLAYING)
 				.build();
 		
 		try {

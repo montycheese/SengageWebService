@@ -10,8 +10,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIndexRangeKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
 
 @Data
 @Builder
@@ -22,10 +25,12 @@ public class Player {
 	public static final String TABLE_NAME = "Player";
 	public static final String GAME_ID_ATTR_NAME = "GameId";
 	public static final String OPAQUE_ID_ATTR_NAME = "OpaqueId";
+	public static final String PLAYER_STATUS_ATTR_NAME = "PlayerStatus";
+	public static final String GAME_ID_PLAYER_STATUS_INDEX = GAME_ID_ATTR_NAME + "-" + PLAYER_STATUS_ATTR_NAME + "-" + "Index";
 	
 	@DynamoDBHashKey(attributeName = GAME_ID_ATTR_NAME)
 	private String gameId;
-	@DynamoDBHashKey(attributeName = OPAQUE_ID_ATTR_NAME)
+	@DynamoDBRangeKey(attributeName = OPAQUE_ID_ATTR_NAME)
 	private String opaqueId;
 	private String userId;
 	private String userName;
@@ -33,6 +38,7 @@ public class Player {
 	private Instant joinedAt;
 	@DynamoDBTypeConverted(converter = InstantConverter.class)
 	private Instant modifiedAt;
-	
-	
+	@DynamoDBIndexRangeKey(attributeName = PLAYER_STATUS_ATTR_NAME, localSecondaryIndexName = GAME_ID_PLAYER_STATUS_INDEX)
+	@DynamoDBTypeConvertedEnum
+	private PlayerStatus playerStatus;
 }

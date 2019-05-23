@@ -352,6 +352,8 @@ Resources:
           AttributeType: S
         - AttributeName: OpaqueId
           AttributeType: S
+        - AttributeName: PlayerStatus
+          AttributeType: S
       KeySchema:
         - AttributeName: GameId
           KeyType: HASH
@@ -361,6 +363,15 @@ Resources:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
       TableName: Player
+      LocalSecondaryIndexes:
+        - IndexName: "GameId-PlayerStatus-Index"
+          KeySchema:
+            - AttributeName: GameId
+              KeyType: HASH
+            - AttributeName: PlayerStatus
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
 Outputs:
   ConnectionsTableArn:

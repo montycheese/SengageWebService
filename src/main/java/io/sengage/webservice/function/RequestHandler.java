@@ -2,6 +2,7 @@ package io.sengage.webservice.function;
 
 import io.sengage.webservice.dagger.ActivityComponent;
 import io.sengage.webservice.dagger.DaggerActivityComponent;
+import io.sengage.webservice.exception.GameCompletedException;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
 import io.sengage.webservice.router.LambdaRouter;
@@ -14,6 +15,7 @@ import org.apache.http.HttpStatus;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import com.amazonaws.util.Throwables;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 
 public final class RequestHandler extends BaseLambda<ServerlessInput, ServerlessOutput> {
@@ -54,10 +56,18 @@ public final class RequestHandler extends BaseLambda<ServerlessInput, Serverless
         	logException(logger, e);
             output.setBody(e.getMessage());
 		} catch (Exception e) {
-        	logger.log("RequestHandler#handleRequest(): unexpected exception thrown during execution " + e.getMessage());
-        	output.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-        	logException(logger, e);
-            output.setBody(e.getMessage());
+			Throwable throwable = Throwables.getRootCause(e);
+			if (throwable instanceof GameCompletedException) {
+	        	logger.log("RequestHandler#handleRequest(): GameCompletedException thrown in server: " + e.getMessage());
+	        	output.setStatusCode(HttpStatus.SC_BAD_REQUEST);
+	        	logException(logger, e);
+	        	output.setBody("Game has already completed.");
+			} else {
+	        	logger.log("RequestHandler#handleRequest(): unexpected exception thrown during execution " + e.getMessage());
+	        	output.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
+	        	logException(logger, e);
+	            output.setBody(e.getMessage());
+			}
 		}
 		
         output.setHeaders(getOutputHeaders());

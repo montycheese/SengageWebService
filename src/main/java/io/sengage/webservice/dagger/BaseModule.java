@@ -16,9 +16,11 @@ import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.JoinGame;
 import io.sengage.webservice.function.UpdateGameState;
 import io.sengage.webservice.model.GameSpecificParameters;
+import io.sengage.webservice.model.GameSpecificState;
 import io.sengage.webservice.router.LambdaRouter;
 import io.sengage.webservice.router.Resource;
 import io.sengage.webservice.sengames.model.CreateSingleStrokeGameParameters;
+import io.sengage.webservice.sengames.model.SendLineRequest;
 import io.sengage.webservice.utils.gson.InstantTypeConverter;
 import io.sengage.webservice.utils.gson.RuntimeTypeAdapterFactory;
 import dagger.Module;
@@ -28,6 +30,7 @@ import dagger.Provides;
 public class BaseModule {
 
 	public static final String CREATE_GAME_REQUEST_LABEL = "CreateGameRequest";
+	public static final String GAME_SPECIFIC_STATE_LABEL = "GameSpecificState";
 
 	@Provides
 	@Singleton
@@ -52,10 +55,12 @@ public class BaseModule {
 	
 	@Provides
 	@Singleton
-	static Gson provideGson(@Named(CREATE_GAME_REQUEST_LABEL) TypeAdapterFactory typeAdapterFactory) {
+	static Gson provideGson(@Named(CREATE_GAME_REQUEST_LABEL) TypeAdapterFactory typeAdapterFactory,
+			@Named(GAME_SPECIFIC_STATE_LABEL) TypeAdapterFactory gameSpecificStateTypeAdapterFactory) {
 		return new GsonBuilder()
 		.registerTypeAdapter(Instant.class, new InstantTypeConverter())
 		.registerTypeAdapterFactory(typeAdapterFactory)
+		.registerTypeAdapterFactory(gameSpecificStateTypeAdapterFactory)
 		.serializeNulls()
 		.create();
 	}
@@ -67,6 +72,15 @@ public class BaseModule {
 		return RuntimeTypeAdapterFactory
 				.of(GameSpecificParameters.class, "type")
 				.registerSubtype(CreateSingleStrokeGameParameters.class, "SINGLE_STROKE");
+	}
+	
+	@Provides
+	@Singleton
+	@Named(GAME_SPECIFIC_STATE_LABEL)
+	static TypeAdapterFactory provideGameSpecificStateRuntimeAdapterFactory() {
+		return RuntimeTypeAdapterFactory
+				.of(GameSpecificState.class, "type")
+				.registerSubtype(SendLineRequest.class, SendLineRequest.type);
 	}
 	
 	@Provides
