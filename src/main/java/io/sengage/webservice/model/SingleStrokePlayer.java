@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 public class SingleStrokePlayer extends Player {
 	@DynamoDBTypeConvertedEnum
 	private StrokeType strokeType;
-	private List<Integer> pointA;
-	private List<Integer> pointB;
+	private List<Double> pointA;
+	private List<Double> pointB;
 	private double width;
 	private String colorHex;
 	
@@ -33,8 +33,8 @@ public class SingleStrokePlayer extends Player {
 			Instant modifiedAt,
 			PlayerStatus playerStatus,
 			StrokeType strokeType,
-			List<Integer> pointA,
-			List<Integer> pointB,
+			List<Double> pointA,
+			List<Double> pointB,
 			double width,
 			String colorHex
 			) {

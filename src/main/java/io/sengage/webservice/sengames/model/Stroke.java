@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Stroke {
-	private List<Integer> pointA;
-	private List<Integer> pointB;
+	private List<Double> pointA;
+	private List<Double> pointB;
 	private String colorHex;
 	private double width;
 	private StrokeType strokeType;
