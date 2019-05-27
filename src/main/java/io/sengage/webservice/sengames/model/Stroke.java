@@ -17,4 +17,6 @@ public class Stroke {
 	private String colorHex;
 	private double width;
 	private StrokeType strokeType;
+	private String userName;
+	private String opaqueId;
 }

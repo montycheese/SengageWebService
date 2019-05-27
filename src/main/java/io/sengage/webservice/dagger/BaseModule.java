@@ -13,6 +13,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
 import io.sengage.webservice.function.CreateGame;
+import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
 import io.sengage.webservice.function.UpdateGameState;
 import io.sengage.webservice.model.GameSpecificParameters;
@@ -50,7 +51,13 @@ public class BaseModule {
     				.className(JoinGame.class.getName())
     				.httpMethod("POST")
     				.pattern(Pattern.compile("^/game/(.*?)\\/join$"))
-    				.build());
+    				.build())
+			.registerActivity(Resource.builder()
+					.className(GetFinalGameResults.class.getName())
+					.httpMethod("GET")
+    				.pattern(Pattern.compile("^/game/(.*?)\\/results$"))
+					.build()
+					);
 	}
 	
 	@Provides

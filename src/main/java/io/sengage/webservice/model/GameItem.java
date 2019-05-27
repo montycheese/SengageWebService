@@ -68,7 +68,7 @@ public class GameItem {
 	}
 	
 	public GameItemDigest toDigest() {
-		return new GameItemDigest(gameId);
+		return new GameItemDigest(gameId, game);
 	}
 	
 	@Data
@@ -76,6 +76,8 @@ public class GameItem {
 	@NoArgsConstructor
 	public static class GameItemDigest {
 		public static final String GAME_ID_ATTR_KEY = "gameId";
+		public static final String GAME_ATTR_KEY = "game";
 		private String gameId;
+		private Game game;
 	}
 }

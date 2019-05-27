@@ -18,4 +18,6 @@ public interface PlayerDataProvider {
 	// todo do pagination
 	public List<? extends Player> listPlayers(String gameId, PlayerStatus status, Class<? extends Player> clazz);
 	
+	public int getNumberOfPlayersInGame(String gameId, PlayerStatus status);
+	
 }

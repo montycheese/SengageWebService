@@ -4,6 +4,7 @@ import io.sengage.webservice.auth.JwtProvider;
 import io.sengage.webservice.auth.TwitchJWTField;
 import io.sengage.webservice.dagger.ExtensionModule;
 import io.sengage.webservice.model.GameItem;
+import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.JoinGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.StartGameMessage;
 
@@ -28,7 +29,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.gson.Gson;
 
-public class TwitchClient {
+public final class TwitchClient {
 	
 	private static final String TWITCH_API_BASE_URL = "https://api.twitch.tv";
 	
@@ -115,6 +116,40 @@ public class TwitchClient {
 					gameItem.getChannelId(), urlString), e);
 		}
 		return success;
+	}
+	
+	public boolean notifyChannelGameEnded(String channelId, EndGameMessage message) {
+		boolean success = false;
+		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);		
+		GenericUrl url = new GenericUrl(urlString);
+
+		HttpContent content = new JsonHttpContent(jsonFactory, 
+				PubSubMessage.builder()
+				.contentType(PubSubMessage.JSON)
+				.targets(Arrays.asList("broadcast"))
+				.message(gson.toJson(message))
+				.build());
+		
+		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(channelId));
+
+		try {
+			HttpRequest request = requestFactory.buildPostRequest(url, content);
+			initHttpHeaders(request, authToken);
+			
+			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
+			HttpResponse response =  request.execute();
+			success = response.isSuccessStatusCode();
+			response.disconnect();
+		} catch (IOException e) {
+			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
+					channelId, urlString), e);
+		}
+		return success;
+	}
+	
+	public boolean notifyChannelGameCancelled() {
+		return false;
+		// TODO
 	}
 	
 	public boolean sendExtensionChatMessage(String channelId, String message) {

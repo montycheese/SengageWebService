@@ -7,6 +7,7 @@ public enum GameStatus {
 	WAITING_FOR_PLAYERS(1),
 	IN_PROGRESS(2),
 	COMPLETED(3),
+	TIME_UP(3),
 	TERMINAL(4),
 	ERROR_STATE(5)
 	;

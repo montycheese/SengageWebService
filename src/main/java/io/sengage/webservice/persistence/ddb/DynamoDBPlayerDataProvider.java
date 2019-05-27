@@ -114,4 +114,21 @@ public class DynamoDBPlayerDataProvider implements PlayerDataProvider {
 		return null;
 		
 	}
+
+	@Override
+	public int getNumberOfPlayersInGame(String gameId, PlayerStatus status) {
+		// todo support provindg null status
+		String val = ":val1";
+		String val2 = ":val2";
+		String keyConditionalExpression = String.format("%s = %s and %s = %s", 
+				Player.GAME_ID_ATTR_NAME, val, Player.PLAYER_STATUS_ATTR_NAME, val2);
+		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+		eav.put(val, new AttributeValue().withS(gameId));
+		eav.put(val2, new AttributeValue().withS(status.name()));
+		DynamoDBQueryExpression<Player> q = new DynamoDBQueryExpression<Player>()				
+				.withIndexName(Player.GAME_ID_PLAYER_STATUS_INDEX)
+				.withKeyConditionExpression(keyConditionalExpression)
+				.withExpressionAttributeValues(eav);
+		return mapper.count(Player.class, q);
+	}
 }
