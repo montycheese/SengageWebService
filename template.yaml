@@ -266,6 +266,30 @@ Resources:
       Targets: 
         - Arn: !GetAtt SengamesCWEventHandlerLambdaFunction.Arn
           Id: SengamesCWEventHandlerLambdaFunction
+  AllPlayersFinishedRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Rule to direct all players finished events to the target"
+      Name: "AllPlayersFinishedRule"
+      EventPattern:
+        detail-type:
+          - ALL_PLAYERS_FINISHED
+      State: ENABLED
+      Targets: 
+        - Arn: !GetAtt SengamesCWEventHandlerLambdaFunction.Arn
+          Id: SengamesCWEventHandlerLambdaFunction
+  GameOutOfTimeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Rule to direct all players finished events to the target"
+      Name: "GameOutOfTimeRule"
+      EventPattern:
+        detail-type:
+          - GAME_OUT_OF_TIME
+      State: ENABLED
+      Targets: 
+        - Arn: !GetAtt SengamesCWEventHandlerLambdaFunction.Arn
+          Id: SengamesCWEventHandlerLambdaFunction
       
       
   #IAM
