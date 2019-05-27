@@ -7,7 +7,6 @@ import io.sengage.webservice.dagger.EventsComponent;
 import io.sengage.webservice.function.BaseLambda;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem.GameItemDigest;
-import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.sengames.handler.EndGameHandler;
 import io.sengage.webservice.sengames.handler.EndGameHandlerFactory;
 import io.sengage.webservice.sengames.handler.StartGameHandler;
@@ -24,9 +23,6 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 	
 	@Inject
 	EndGameHandlerFactory endGameHandlerFactory;
-	
-	@Inject
-	GameDataProvider gameDataProvider;
 	
 	private LambdaLogger logger;
 	

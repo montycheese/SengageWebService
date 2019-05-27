@@ -12,6 +12,8 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.google.gson.Gson;
 
 import io.sengage.webservice.auth.AuthorizationHelper;
+import io.sengage.webservice.dagger.DaggerExtensionComponent;
+import io.sengage.webservice.dagger.ExtensionComponent;
 import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
@@ -44,6 +46,11 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 	AuthorizationHelper authHelper;
 	
 	private LambdaLogger logger;
+	
+	public GetFinalGameResults() {
+		ExtensionComponent component = DaggerExtensionComponent.create();
+		component.injectGetFinalGameResults(this);
+	}
 	
 	
 	@Override
