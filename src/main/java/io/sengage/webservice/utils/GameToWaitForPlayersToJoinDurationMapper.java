@@ -1,4 +1,4 @@
-package io.sengage.webservice.sengames.model;
+package io.sengage.webservice.utils;
 
 import io.sengage.webservice.model.Game;
 
@@ -8,13 +8,13 @@ import com.google.common.collect.ImmutableMap;
 
 public class GameToWaitForPlayersToJoinDurationMapper {
 
-	// in milliseconds
+	// in seconds
 	private static final Map<Game, Integer> gameToWaitForPlayersToJoinDuration;
 	
 	static {
 		gameToWaitForPlayersToJoinDuration = ImmutableMap.<Game, Integer>builder()
-				.put(Game.SINGLE_STROKE, 5000)
-				.put(Game.FLAPPY_BIRD_BR, 30000)
+				.put(Game.SINGLE_STROKE, 5)
+				.put(Game.FLAPPY_BIRD_BR, 15)
 				.build();
 	}
 	

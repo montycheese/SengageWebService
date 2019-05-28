@@ -58,9 +58,14 @@ public class StartGameHandler {
 			gameDataProvider.updateGame(game);
 		} catch (ItemVersionMismatchException e) {
 			e.printStackTrace();
+			return;
 		}
 		
-		Date gameExpiryTime = new Date(Instant.now().plus(game.getDuration(), ChronoUnit.SECONDS).toEpochMilli());
+		Date gameExpiryTime = new Date(
+				Instant.now().plusSeconds(game.getDuration()).toEpochMilli()
+		);
+		
+		System.out.println("Setting game end time to: " + gameExpiryTime.toString());
 		
 		// send CWE to notify of next event.
 		PutEventsRequest eventsRequest = new PutEventsRequest()

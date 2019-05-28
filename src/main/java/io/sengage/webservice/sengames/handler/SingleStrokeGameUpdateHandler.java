@@ -57,6 +57,8 @@ public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
 		
 		if (game.getGameStatus().isOnOrAfter(GameStatus.COMPLETED)) {
 			throw new GameCompletedException(String.format("Game %s already completed. Could not accept request.", gameId));
+		} else if (game.getGameStatus().isBefore(GameStatus.IN_PROGRESS)) {
+			throw new IllegalStateException("Cannot submit game input before game is started");
 		}
 		
 		Player player;
@@ -101,6 +103,7 @@ public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
 				playerDataProvider.getNumberOfPlayersInGame(gameId, PlayerStatus.PLAYING);
 		
 		if (playersRemaining <= 0) {
+			System.out.println("All players are finished, creating CWE event.");
 			notifyAllPlayersAreFinished(game);
 		}
 		
@@ -121,7 +124,7 @@ public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
 		PutEventsResult response = cwe.putEvents(eventsRequest);
 		
 		if (response.getFailedEntryCount() > 0) {
-			System.out.println("Error creating event to start game: " + gameItem.getGameId() + " failure count: "  + response.getFailedEntryCount());
+			System.out.println("Error creating event to end game: " + gameItem.getGameId() + " failure count: "  + response.getFailedEntryCount());
 			for (PutEventsResultEntry entry: response.getEntries()) {
 				System.out.println("Error: " + entry.getErrorMessage());
 			}

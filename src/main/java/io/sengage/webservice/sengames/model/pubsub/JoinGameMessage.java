@@ -5,8 +5,7 @@ import java.time.temporal.ChronoUnit;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
-import io.sengage.webservice.sengames.model.GameToWaitForPlayersToJoinDurationMapper;
-
+import io.sengage.webservice.utils.GameToWaitForPlayersToJoinDurationMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

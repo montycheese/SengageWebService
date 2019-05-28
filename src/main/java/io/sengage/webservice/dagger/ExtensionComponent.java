@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 import dagger.Component;
 
 @Singleton
-@Component(modules = {BaseModule.class, ExtensionModule.class, DataModule.class, NetworkingModule.class})
+@Component(modules = {BaseModule.class, ExtensionModule.class, DataModule.class, NetworkingModule.class, TaskModule.class})
 public interface ExtensionComponent {
 	void injectCreateGame(CreateGame createGame);
 	void injectUpdateGameState(UpdateGameState updateGameState);

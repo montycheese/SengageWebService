@@ -32,9 +32,9 @@ public class JoinGameHandler {
 		Optional<GameItem> optionalGame = gameDataProvider.getGame(gameId);
 		
 		if (!optionalGame.isPresent()) {
-			// todo throw
+			throw new IllegalStateException("Could not find game with id: " + gameId);
 		} else if (optionalGame.get().getGameStatus().isAfter(GameStatus.WAITING_FOR_PLAYERS)) {
-			// todo throw
+			// TODO throw
 		}
 		// todo also check if game is full
 		

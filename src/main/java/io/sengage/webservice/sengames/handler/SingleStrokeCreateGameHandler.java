@@ -1,40 +1,30 @@
 package io.sengage.webservice.sengames.handler;
 
-import java.util.Date;
-
-import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
-import com.amazonaws.services.cloudwatchevents.model.PutEventsRequest;
-import com.amazonaws.services.cloudwatchevents.model.PutEventsRequestEntry;
-import com.amazonaws.services.cloudwatchevents.model.PutEventsResult;
-import com.amazonaws.services.cloudwatchevents.model.PutEventsResultEntry;
 import com.google.gson.Gson;
 
-import io.sengage.webservice.events.EventDetail;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
-import io.sengage.webservice.model.GameItem.GameItemDigest;
 import io.sengage.webservice.model.GameSpecificParameters;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.persistence.GameDataProvider;
-import io.sengage.webservice.sengames.model.GameToWaitForPlayersToJoinDurationMapper;
+import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
-import io.sengage.webservice.utils.Constants;
 
 public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 	
 	private final GameDataProvider gameDataProvider;
 	private final TwitchClient twitchClient;
-	private final AmazonCloudWatchEventsAsync cwe;
 	private final Gson gson;
+	private final StepFunctionTaskExecutor sfExecutor;
 	
-	public SingleStrokeCreateGameHandler(GameDataProvider gameDataProvider, TwitchClient twitchClient, AmazonCloudWatchEventsAsync cwe,
-			Gson gson) {
+	public SingleStrokeCreateGameHandler(GameDataProvider gameDataProvider, TwitchClient twitchClient,
+			Gson gson, StepFunctionTaskExecutor sfExecutor) {
 		this.gameDataProvider = gameDataProvider;
 		this.twitchClient = twitchClient;
-		this.cwe = cwe;
 		this.gson = gson;
+		this.sfExecutor = sfExecutor;
 	}
 
 	@Override
@@ -59,6 +49,9 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 			throw e;
 		}
 		
+		
+		String startGameStateMachineArn = sfExecutor.executeStartGameStateMachine(item);
+		item.setStartGameStateMachineExecutionArn(startGameStateMachineArn);
 		try {
 			gameDataProvider.updateGame(item);
 		} catch (ItemVersionMismatchException e) {
@@ -69,33 +62,6 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 			throw new RuntimeException("Item version mismatch while trying to update game, moving game to error state", e);
 			
 		}
-		
-		Date gameStartTime = 
-				new Date(item.getCreatedAt().plusMillis(GameToWaitForPlayersToJoinDurationMapper.get(item.getGame())).toEpochMilli());
-		
-		// send CWE to notify of next event.
-		PutEventsRequest eventsRequest = new PutEventsRequest()
-		.withEntries(new PutEventsRequestEntry()
-			.withTime(gameStartTime)
-			.withDetail(gson.toJson(item.toDigest(), GameItemDigest.class))
-			.withSource(Constants.CWE_EVENT_SOURCE)
-			.withDetailType(EventDetail.WAITING_FOR_PLAYERS_COMPLETE.name())
-		);
-		PutEventsResult response = cwe.putEvents(eventsRequest);
-		
-		if (response.getFailedEntryCount() > 0) {
-			System.out.println("Error creating event to start game: " + item.getGameId() + " failure count: "  + response.getFailedEntryCount());
-			for (PutEventsResultEntry entry: response.getEntries()) {
-				System.out.println("Error: " + entry.getErrorMessage());
-			}
-			try {
-				gameDataProvider.updateGame(item.toBuilder().gameStatus(GameStatus.ERROR_STATE).build());
-			} catch (ItemVersionMismatchException e) {
-			}
-			throw new IllegalStateException("Failed to create event to notify users to join game");
-			// notify channel that game ended or failed to start?
-		}
-		
 		return item.getGameId();
 	}
 

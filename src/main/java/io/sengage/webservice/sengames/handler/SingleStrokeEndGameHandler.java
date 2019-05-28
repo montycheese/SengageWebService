@@ -1,19 +1,15 @@
 package io.sengage.webservice.sengames.handler;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
-import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.PlayerStatus;
-import io.sengage.webservice.model.SingleStrokeEndGameResult;
 import io.sengage.webservice.model.SingleStrokePlayer;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
-import io.sengage.webservice.sengames.model.Stroke;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.twitch.TwitchClient;
 
@@ -31,7 +27,8 @@ public class SingleStrokeEndGameHandler implements EndGameHandler {
 				.orElseThrow(() -> new RuntimeException("Could not find game with id: " + gameId));
 		
 		if (gameItem.getGameStatus().isOnOrAfter(GameStatus.COMPLETED)) {
-			System.out.println("Game has a higher or equal ordinal to completed. Assuming already complete");
+			System.out.println(String.format("Game has a status of %s which is higher or equal ordinal to completed."
+					+ " Assuming game already complete", gameItem.getGameStatus()));
 			return;
 		}
 		
@@ -46,7 +43,8 @@ public class SingleStrokeEndGameHandler implements EndGameHandler {
 				.orElseThrow(() -> new RuntimeException("Could not find game with id: " + gameId));
 		
 		if (gameItem.getGameStatus().isOnOrAfter(GameStatus.COMPLETED)) {
-			System.out.println("Game has a higher or equal ordinal to completed. Assuming already complete");
+			System.out.println(String.format("Game has a status of %s which is higher or equal ordinal to completed."
+					+ " Assuming game already complete", gameItem.getGameStatus()));
 			return;
 		}
 		
@@ -56,15 +54,7 @@ public class SingleStrokeEndGameHandler implements EndGameHandler {
 		
 	}
 	
-	private void handleEndGame(GameItem gameItem) {
-		if (gameItem.getGameStatus().isOnOrAfter(GameStatus.COMPLETED)) {
-			System.out.println("Game has a higher or equal ordinal to completed. Assuming already complete");
-			return;
-		}
-		
-
-		
-		
+	private void handleEndGame(GameItem gameItem) {		
 		try {
 			// fetch results for game
 			@SuppressWarnings("unchecked")

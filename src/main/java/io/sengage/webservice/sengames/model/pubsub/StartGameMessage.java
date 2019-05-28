@@ -27,7 +27,7 @@ public class StartGameMessage implements PubSubGameMessage {
 		return StartGameMessage.builder()
 				.gameId(gameItem.getGameId())
 				.game(gameItem.getGame())
-				.gameStatus(GameStatus.WAITING_FOR_PLAYERS)
+				.gameStatus(GameStatus.IN_PROGRESS)
 				.gameEndTimeEpochMilli(gameItem.getCreatedAt().plus(gameItem.getDuration(), ChronoUnit.SECONDS).toEpochMilli())
 				.build();
 	}

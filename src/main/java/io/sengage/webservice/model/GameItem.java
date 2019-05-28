@@ -41,6 +41,8 @@ public class GameItem {
 	@DynamoDBTypeConverted(converter = InstantConverter.class)
 	private Instant modifiedAt;
 	private int duration;
+	private String startGameStateMachineExecutionArn;
+	private String gameTimeUpStateMachineExecutionArn;
 	private Long version;
 	
 	public void setVersion(Long version) {

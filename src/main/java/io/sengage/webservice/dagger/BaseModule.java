@@ -8,6 +8,8 @@ import javax.inject.Singleton;
 
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsyncClientBuilder;
+import com.amazonaws.services.stepfunctions.AWSStepFunctionsAsync;
+import com.amazonaws.services.stepfunctions.AWSStepFunctionsAsyncClientBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
@@ -95,5 +97,10 @@ public class BaseModule {
 	static AmazonCloudWatchEventsAsync provideAmazonCloudWatchEventsAsync() {
 		return AmazonCloudWatchEventsAsyncClientBuilder.defaultClient();
 	}
-
+	
+	@Provides
+	@Singleton
+	static AWSStepFunctionsAsync provideAWSStepFunctionsAsync() {
+		return AWSStepFunctionsAsyncClientBuilder.defaultClient();
+	}
 }

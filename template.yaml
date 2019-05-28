@@ -13,7 +13,7 @@ Globals:
         ExtensionOwnerTwitchId: "79606633"
         ClientId: "pfo4osx6zryo4kdo5oabxz8pyv84es"
         ExtensionVersion: "0.0.1"
-        TableName: "Connections"
+        StateMachineExecutionRoleArn: !GetAtt StatesExecutionRole.Arn
 
 Parameters:
   DeploymentStage:
@@ -228,6 +228,7 @@ Resources:
   
   SengageWSLambdaFunction:
     Type: 'AWS::Serverless::Function'
+    DependsOn: SengamesGameTaskHandlerLambdaFunction
     Properties:
       Handler: io.sengage.webservice.function.RequestHandler
       FunctionName: SengageWSLambdaFunction
@@ -236,6 +237,9 @@ Resources:
       MemorySize: 320
       Role: !GetAtt DefaultLambdaInvocationRole.Arn
       CodeUri: ./target/webservice-1.0.0.jar
+      Environment:
+        Variables:
+          GameTaskHandlerLambdaArn: !GetAtt SengamesGameTaskHandlerLambdaFunction.Arn
       #Events:
       #  SengageWSWebService:
       #      Type: Api
@@ -253,6 +257,19 @@ Resources:
       MemorySize: 320
       Role: !GetAtt DefaultLambdaInvocationRole.Arn
       CodeUri: ./target/webservice-1.0.0.jar
+  SengamesGameTaskHandlerLambdaFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: io.sengage.webservice.function.GameTaskHandler
+      FunctionName: SengamesGameTaskHandlerLambdaFunction
+      Runtime: java8
+      Timeout: 120
+      MemorySize: 320
+      Role: !GetAtt DefaultLambdaInvocationRole.Arn
+      CodeUri: ./target/webservice-1.0.0.jar
+
+          
+        
 # Cloud watch
   WaitingForPlayersCompleteRule:
     Type: AWS::Events::Rule
@@ -317,8 +334,10 @@ Resources:
             - logs:PutLogEvents
             - logs:DescribeLogStream
             - cloudwatch:PutMetricData
+            - iam:PassRole
             - events:PutEvents
             - dynamodb:*
+            - states:*
             Resource: "*"
   ApiGatewayLambdaInvokePermission:
     Type: AWS::IAM::Role
@@ -341,7 +360,30 @@ Resources:
             Action: 
             - lambda:InvokeFunction
             Resource: "*"
-  PermissionForSengamesEventToInvokeLambda:
+            
+  StatesExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - !Sub states.${AWS::Region}.amazonaws.com
+            Action: "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: StatesExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource: "*"
+            
+  PermissionForSengamesWaitingForPlayersCompleteEventToInvokeLambda:
     Type: AWS::Lambda::Permission
     Properties: 
       FunctionName: 
@@ -352,6 +394,29 @@ Resources:
         Fn::GetAtt: 
           - "WaitingForPlayersCompleteRule"
           - "Arn"
+  PermissionForSengamesAllPlayersFinishedEventToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: "SengamesCWEventHandlerLambdaFunction"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "AllPlayersFinishedRule"
+          - "Arn"
+  PermissionForSengamesGameOutOfTimeEventToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: 
+        Ref: "SengamesCWEventHandlerLambdaFunction"
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: 
+        Fn::GetAtt: 
+          - "GameOutOfTimeRule"
+          - "Arn"
+          
   # DB
     # DDB tables
   GameTable:

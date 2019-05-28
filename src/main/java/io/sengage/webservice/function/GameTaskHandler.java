@@ -1,19 +1,20 @@
-package io.sengage.webservice.events;
+package io.sengage.webservice.function;
 
-import javax.inject.Inject;
-
-import io.sengage.webservice.function.BaseLambda;
+import io.sengage.webservice.dagger.DaggerTaskComponent;
+import io.sengage.webservice.dagger.TaskComponent;
+import io.sengage.webservice.events.EventDetail;
 import io.sengage.webservice.model.Game;
-import io.sengage.webservice.model.GameItem.GameItemDigest;
 import io.sengage.webservice.sengames.handler.EndGameHandler;
 import io.sengage.webservice.sengames.handler.EndGameHandlerFactory;
 import io.sengage.webservice.sengames.handler.StartGameHandler;
+import io.sengage.webservice.sf.GameContextInput;
+
+import javax.inject.Inject;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 
-public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
+public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 
 
 	@Inject
@@ -24,19 +25,19 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 	
 	private LambdaLogger logger;
 	
-	public CWEventsHandler() {
-		//TaskComponent component = DaggerEventsComponent.create();
-		//component.injectCWEventsHandler(this);
+	public GameTaskHandler() {
+		TaskComponent component = DaggerTaskComponent.create();
+		component.injectGameTaskHandler(this);
 	}
 	
 	@Override
-	public Void handleRequest(ScheduledEvent event, Context context) {
+	public Void handleRequest(GameContextInput input, Context context) {
 		logger = context.getLogger();
-		logger.log("handleEvent(): input: " + event);
+		logger.log("handleEvent(): input: " + input);
 		
-		EventDetail detailType = EventDetail.valueOf(event.getDetailType());
-		String gameId = (String) event.getDetail().get(GameItemDigest.GAME_ID_ATTR_KEY);
-		Game game = Game.valueOf((String) event.getDetail().get(GameItemDigest.GAME_ATTR_KEY));
+		EventDetail detailType = input.getEventDetail();
+		String gameId = input.getGameId();
+		Game game = input.getGame();
 		
 		switch (detailType) {
 		case GAME_OUT_OF_TIME:

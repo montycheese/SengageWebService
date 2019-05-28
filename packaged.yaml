@@ -12,7 +12,10 @@ Globals:
         ClientId: pfo4osx6zryo4kdo5oabxz8pyv84es
         ExtensionOwnerTwitchId: '79606633'
         ExtensionVersion: 0.0.1
-        TableName: Connections
+        StateMachineExecutionRoleArn:
+          Fn::GetAtt:
+          - StatesExecutionRole
+          - Arn
 Outputs:
   ConnectionsTableArn:
     Description: Connections table ARN
@@ -55,6 +58,21 @@ Parameters:
       Prod)
     Type: String
 Resources:
+  AllPlayersFinishedRule:
+    Properties:
+      Description: Rule to direct all players finished events to the target
+      EventPattern:
+        detail-type:
+        - ALL_PLAYERS_FINISHED
+      Name: AllPlayersFinishedRule
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - SengamesCWEventHandlerLambdaFunction
+          - Arn
+        Id: SengamesCWEventHandlerLambdaFunction
+    Type: AWS::Events::Rule
   ApiGatewayLambdaInvokePermission:
     Properties:
       AssumeRolePolicyDocument:
@@ -135,8 +153,10 @@ Resources:
             - logs:PutLogEvents
             - logs:DescribeLogStream
             - cloudwatch:PutMetricData
+            - iam:PassRole
             - events:PutEvents
             - dynamodb:*
+            - states:*
             Effect: Allow
             Resource: '*'
           Version: '2012-10-17'
@@ -173,6 +193,21 @@ Resources:
         - - integrations
           - Ref: DisconnectInteg
     Type: AWS::ApiGatewayV2::Route
+  GameOutOfTimeRule:
+    Properties:
+      Description: Rule to direct all players finished events to the target
+      EventPattern:
+        detail-type:
+        - GAME_OUT_OF_TIME
+      Name: GameOutOfTimeRule
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - SengamesCWEventHandlerLambdaFunction
+          - Arn
+        Id: SengamesCWEventHandlerLambdaFunction
+    Type: AWS::Events::Rule
   GameTable:
     Properties:
       AttributeDefinitions:
@@ -207,7 +242,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Authorizer
   LambdaAuthorizerFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/c2b12d4b655c512f50831da2e78f859b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
       Handler: io.sengage.webservice.function.LambdaAuthorizer
       MemorySize: 256
       Policies:
@@ -228,7 +263,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnConnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/c2b12d4b655c512f50831da2e78f859b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
       Handler: io.sengage.webservice.function.OnConnect
       MemorySize: 256
       Policies:
@@ -248,7 +283,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnDisconnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/c2b12d4b655c512f50831da2e78f859b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
       Handler: io.sengage.webservice.function.OnDisconnect
       MemorySize: 256
       Policies:
@@ -266,7 +301,29 @@ Resources:
         Ref: OnDisconnectFunction
       Principal: apigateway.amazonaws.com
     Type: AWS::Lambda::Permission
-  PermissionForSengamesEventToInvokeLambda:
+  PermissionForSengamesAllPlayersFinishedEventToInvokeLambda:
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: SengamesCWEventHandlerLambdaFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - AllPlayersFinishedRule
+        - Arn
+    Type: AWS::Lambda::Permission
+  PermissionForSengamesGameOutOfTimeEventToInvokeLambda:
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: SengamesCWEventHandlerLambdaFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - GameOutOfTimeRule
+        - Arn
+    Type: AWS::Lambda::Permission
+  PermissionForSengamesWaitingForPlayersCompleteEventToInvokeLambda:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName:
@@ -316,7 +373,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Integration
   SendMessageFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/c2b12d4b655c512f50831da2e78f859b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
       Handler: io.sengage.webservice.function.SendMessage
       MemorySize: 256
       Policies:
@@ -354,8 +411,15 @@ Resources:
           - Ref: SendInteg
     Type: AWS::ApiGatewayV2::Route
   SengageWSLambdaFunction:
+    DependsOn: SengamesGameTaskHandlerLambdaFunction
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/c2b12d4b655c512f50831da2e78f859b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      Environment:
+        Variables:
+          GameTaskHandlerLambdaArn:
+            Fn::GetAtt:
+            - SengamesGameTaskHandlerLambdaFunction
+            - Arn
       FunctionName: SengageWSLambdaFunction
       Handler: io.sengage.webservice.function.RequestHandler
       MemorySize: 320
@@ -382,9 +446,22 @@ Resources:
     Type: AWS::ApiGatewayV2::Api
   SengamesCWEventHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/c2b12d4b655c512f50831da2e78f859b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
       FunctionName: SengamesCWEventHandlerLambdaFunction
       Handler: io.sengage.webservice.events.CWEventsHandler
+      MemorySize: 320
+      Role:
+        Fn::GetAtt:
+        - DefaultLambdaInvocationRole
+        - Arn
+      Runtime: java8
+      Timeout: 120
+    Type: AWS::Serverless::Function
+  SengamesGameTaskHandlerLambdaFunction:
+    Properties:
+      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      FunctionName: SengamesGameTaskHandlerLambdaFunction
+      Handler: io.sengage.webservice.function.GameTaskHandler
       MemorySize: 320
       Role:
         Fn::GetAtt:
@@ -403,6 +480,27 @@ Resources:
       StageName:
         Ref: DeploymentStage
     Type: AWS::ApiGatewayV2::Stage
+  StatesExecutionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - Fn::Sub: states.${AWS::Region}.amazonaws.com
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - lambda:InvokeFunction
+            Effect: Allow
+            Resource: '*'
+          Version: '2012-10-17'
+        PolicyName: StatesExecutionPolicy
+    Type: AWS::IAM::Role
   WaitingForPlayersCompleteRule:
     Properties:
       Description: Rule to direct waiting for players complete events to the target
