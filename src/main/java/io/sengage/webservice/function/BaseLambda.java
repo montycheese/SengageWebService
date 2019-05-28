@@ -48,4 +48,36 @@ public abstract class BaseLambda<I, O> implements RequestHandler<I,O> {
 		.opaqueId(TwitchJWTField.OPAQUE_USER_ID.fromJWT(jwt))
 		.build();
 	}
+	
+	
+	/**
+	 * Hacky but works for now.
+	 * @param path http path e.g. /threads/thread123
+	 * @param resource The path resource to fetch e.g. threadId
+	 * @return The pathparameter or null if not found
+	 */
+	protected String getPathParameter(String path, PathParameter parameter) {
+		String[] pathPieces = path.split("/");
+		
+		for (int i = 0; i < pathPieces.length; i++) {
+			if (pathPieces[i].equalsIgnoreCase(parameter.parentResource)) {
+				if (i + 1 >= pathPieces.length) {
+					throw new IllegalStateException("Requested path parameter: " + parameter + " but was not found in path: " +path);
+				}
+				return pathPieces[i+1];
+			}
+		}
+		throw new IllegalStateException("Requested path parameter: " + parameter + " but was not found in path: " + path);
+	}
+	
+
+	public static enum PathParameter {
+		GAME_ID("game")
+		;
+		
+		public String parentResource;
+		private PathParameter(String parentResource) {
+			this.parentResource = parentResource;
+		}
+	}
 }

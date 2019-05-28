@@ -8,6 +8,7 @@ import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
+import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
 
 
@@ -17,6 +18,7 @@ public class SingleStrokeEndGameHandler implements EndGameHandler {
 	private final TwitchClient twitchClient;
 	private final GameDataProvider gameDataProvider;
 	private final PlayerDataProvider playerDataProvider;
+	private final StepFunctionTaskExecutor sfExecutor;
 	
 	@Override
 	public void handleEndGame(String gameId) {
@@ -74,6 +76,8 @@ public class SingleStrokeEndGameHandler implements EndGameHandler {
 				System.out.println("SingleStrokeEndGameHandler(): Failed to persist moving game to error state");
 				throw e;
 			}
+		} finally {
+			sfExecutor.cleanUpGameStateMachineResources(gameItem);
 		}
 	}
 	

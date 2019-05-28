@@ -271,18 +271,6 @@ Resources:
           
         
 # Cloud watch
-  WaitingForPlayersCompleteRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: "Rule to direct waiting for players complete events to the target"
-      Name: "WaitingForPlayersCompleteRule"
-      EventPattern:
-        detail-type:
-          - WAITING_FOR_PLAYERS_COMPLETE
-      State: ENABLED
-      Targets: 
-        - Arn: !GetAtt SengamesCWEventHandlerLambdaFunction.Arn
-          Id: SengamesCWEventHandlerLambdaFunction
   AllPlayersFinishedRule:
     Type: AWS::Events::Rule
     Properties:
@@ -295,19 +283,6 @@ Resources:
       Targets: 
         - Arn: !GetAtt SengamesCWEventHandlerLambdaFunction.Arn
           Id: SengamesCWEventHandlerLambdaFunction
-  GameOutOfTimeRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: "Rule to direct all players finished events to the target"
-      Name: "GameOutOfTimeRule"
-      EventPattern:
-        detail-type:
-          - GAME_OUT_OF_TIME
-      State: ENABLED
-      Targets: 
-        - Arn: !GetAtt SengamesCWEventHandlerLambdaFunction.Arn
-          Id: SengamesCWEventHandlerLambdaFunction
-      
       
   #IAM
   DefaultLambdaInvocationRole:
@@ -382,18 +357,7 @@ Resources:
                 Action:
                   - "lambda:InvokeFunction"
                 Resource: "*"
-            
-  PermissionForSengamesWaitingForPlayersCompleteEventToInvokeLambda:
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: 
-        Ref: "SengamesCWEventHandlerLambdaFunction"
-      Action: "lambda:InvokeFunction"
-      Principal: "events.amazonaws.com"
-      SourceArn: 
-        Fn::GetAtt: 
-          - "WaitingForPlayersCompleteRule"
-          - "Arn"
+
   PermissionForSengamesAllPlayersFinishedEventToInvokeLambda:
     Type: AWS::Lambda::Permission
     Properties: 
@@ -404,17 +368,6 @@ Resources:
       SourceArn: 
         Fn::GetAtt: 
           - "AllPlayersFinishedRule"
-          - "Arn"
-  PermissionForSengamesGameOutOfTimeEventToInvokeLambda:
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: 
-        Ref: "SengamesCWEventHandlerLambdaFunction"
-      Action: "lambda:InvokeFunction"
-      Principal: "events.amazonaws.com"
-      SourceArn: 
-        Fn::GetAtt: 
-          - "GameOutOfTimeRule"
           - "Arn"
           
   # DB

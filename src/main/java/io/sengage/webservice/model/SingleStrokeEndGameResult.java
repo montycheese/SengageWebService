@@ -8,6 +8,7 @@ import io.sengage.webservice.sengames.model.Stroke;
 @Data
 public class SingleStrokeEndGameResult extends EndGameResult {
 
+	public static String type = "SingleStrokeEndGameResult";
 	private Stroke stroke;
 	
 	public SingleStrokeEndGameResult(Stroke stroke) {

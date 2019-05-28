@@ -18,7 +18,6 @@ import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
-import io.sengage.webservice.model.GetFinalGameResultsRequest;
 import io.sengage.webservice.model.GetFinalGameResultsResponse;
 import io.sengage.webservice.model.Player;
 import io.sengage.webservice.model.PlayerStatus;
@@ -56,28 +55,28 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 	@Override
 	public ServerlessOutput handleRequest(ServerlessInput serverlessInput, Context context) {
 		logger = context.getLogger();
-		logger.log("GetFinalGameResults() Request: " + serverlessInput.getBody());
+		logger.log("GetFinalGameResults() Request: " + serverlessInput);
 		
 		authHelper.authenticateRequestAndVerifyToken(parseAuthTokenFromHeaders(serverlessInput.getHeaders()));
 		
-		GetFinalGameResultsRequest request = gson.fromJson(serverlessInput.getBody(), GetFinalGameResultsRequest.class);
+		String gameId = getPathParameter(serverlessInput.getPath(), PathParameter.GAME_ID);
 		
-		GameItem gameItem = gameDataProvider.getGame(request.getGameId()).get();
+		GameItem gameItem = gameDataProvider.getGame(gameId).get();
 		
 		if (gameItem.getGameStatus().isBefore(GameStatus.COMPLETED)) {
-			throw new IllegalStateException("Game is not yet complete: " + request.getGameId());
+			throw new IllegalStateException("Game is not yet complete: " + gameId);
 		}
 		
 		//todo ensure player belongs to game.
 		
 		List<? extends Player> playerDatum = playerDataProvider
-				.listPlayers(request.getGameId(), 
+				.listPlayers(gameId, 
 						PlayerStatus.COMPLETED,
 						GameToPlayerClassMapper.get(gameItem.getGame()));
 		
 		
 		GetFinalGameResultsResponse response = buildResponse(gameItem.getGame(), playerDatum);
-		
+
 		return ServerlessOutput.builder()
 			.headers(getOutputHeaders())
 			.statusCode(HttpStatus.SC_OK)

@@ -12,6 +12,7 @@ import com.amazonaws.services.stepfunctions.builder.states.WaitForSeconds;
 import com.amazonaws.services.stepfunctions.builder.states.WaitState;
 import com.amazonaws.services.stepfunctions.model.CreateStateMachineRequest;
 import com.amazonaws.services.stepfunctions.model.CreateStateMachineResult;
+import com.amazonaws.services.stepfunctions.model.DeleteStateMachineRequest;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.gson.Gson;
 
@@ -61,6 +62,22 @@ public class StepFunctionTaskExecutor {
 		sfClient.startExecutionAsync(startExecutionRequest);
 		
 		return stateMachineArn;
+	}
+	
+	public void cleanUpGameStateMachineResources(GameItem gameItem) {
+		
+		for (String arn : gameItem.getStateMachineArns()) {
+			DeleteStateMachineRequest req = new DeleteStateMachineRequest()
+				.withStateMachineArn(arn);
+			System.out.println("Deleting State Machine with arn: " + arn);
+			try {
+				// make async/
+				sfClient.deleteStateMachine(req);
+			} catch (Exception e) {
+				System.out.println("Failed to delete State Machine with arn: " + arn);
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	private String createGameTimeUpStateMachine(GameItem gameItem) {
