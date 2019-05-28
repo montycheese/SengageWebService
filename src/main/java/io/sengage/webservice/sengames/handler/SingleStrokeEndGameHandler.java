@@ -1,13 +1,10 @@
 package io.sengage.webservice.sengames.handler;
 
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
-import io.sengage.webservice.model.PlayerStatus;
-import io.sengage.webservice.model.SingleStrokePlayer;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
@@ -55,33 +52,12 @@ public class SingleStrokeEndGameHandler implements EndGameHandler {
 	}
 	
 	private void handleEndGame(GameItem gameItem) {		
-		try {
-			// fetch results for game
-			@SuppressWarnings("unchecked")
-			List<SingleStrokePlayer> players = (List<SingleStrokePlayer>)
-					playerDataProvider.listPlayers(gameItem.getGameId(), PlayerStatus.COMPLETED, SingleStrokePlayer.class);
-			/* notify users of results
-			List<EndGameResult> results = players.stream()
-					.map(player -> new SingleStrokeEndGameResult(
-							player.getOpaqueId(),
-							player.getUserName(),
-							Stroke.builder()
-							.colorHex(player.getColorHex())
-							.opaqueId(player.getOpaqueId())
-							.pointA(player.getPointA())
-							.pointB(player.getPointB())
-							.strokeType(player.getStrokeType())
-							.userName(player.getUserName())
-							.build()
-							))
-					.collect(Collectors.toList());*/
-			
+		try {		
 			boolean success = twitchClient.notifyChannelGameEnded(gameItem.getChannelId(), 
 					EndGameMessage.builder()
 					.game(gameItem.getGame())
 					.gameId(gameItem.getGameId())
 					.gameStatus(gameItem.getGameStatus())
-//					.results(results)
 					.build());
 			
 			try {

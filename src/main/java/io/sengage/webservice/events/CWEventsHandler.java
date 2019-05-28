@@ -2,6 +2,8 @@ package io.sengage.webservice.events;
 
 import javax.inject.Inject;
 
+import io.sengage.webservice.dagger.DaggerTaskComponent;
+import io.sengage.webservice.dagger.TaskComponent;
 import io.sengage.webservice.function.BaseLambda;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem.GameItemDigest;
@@ -25,8 +27,8 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 	private LambdaLogger logger;
 	
 	public CWEventsHandler() {
-		//TaskComponent component = DaggerEventsComponent.create();
-		//component.injectCWEventsHandler(this);
+		TaskComponent component = DaggerTaskComponent.create();
+		component.injectCWEventsHandler(this);
 	}
 	
 	@Override

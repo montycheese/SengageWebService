@@ -15,7 +15,7 @@ import com.amazonaws.services.stepfunctions.model.CreateStateMachineResult;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
 import com.google.gson.Gson;
 
-import io.sengage.webservice.dagger.TaskModule;
+import io.sengage.webservice.dagger.StateMachineModule;
 import io.sengage.webservice.events.EventDetail;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.utils.GameToWaitForPlayersToJoinDurationMapper;
@@ -30,8 +30,8 @@ public class StepFunctionTaskExecutor {
 	
 	@Inject
 	public StepFunctionTaskExecutor(Gson gson, AWSStepFunctionsAsync sfClient,
-			@Named(TaskModule.GAME_TASK_HANDLER_LAMBDA_ARN) String targetLambdaArn, 
-			@Named(TaskModule.STATE_MACHINE_EXE_ROLE_ARN) String stateMachineExecutionArn) {
+			@Named(StateMachineModule.GAME_TASK_HANDLER_LAMBDA_ARN) String targetLambdaArn, 
+			@Named(StateMachineModule.STATE_MACHINE_EXE_ROLE_ARN) String stateMachineExecutionArn) {
 		this.gson = gson;
 		this.sfClient = sfClient;
 		this.targetLambdaArn = targetLambdaArn;

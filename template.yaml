@@ -14,6 +14,8 @@ Globals:
         ClientId: "pfo4osx6zryo4kdo5oabxz8pyv84es"
         ExtensionVersion: "0.0.1"
         StateMachineExecutionRoleArn: !GetAtt StatesExecutionRole.Arn
+        GameTaskHandlerLambdaArn: !Join [":", ["arn:aws:lambda", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "function:SengamesGameTaskHandlerLambdaFunction"]]
+        
 
 Parameters:
   DeploymentStage:
@@ -237,9 +239,7 @@ Resources:
       MemorySize: 320
       Role: !GetAtt DefaultLambdaInvocationRole.Arn
       CodeUri: ./target/webservice-1.0.0.jar
-      Environment:
-        Variables:
-          GameTaskHandlerLambdaArn: !GetAtt SengamesGameTaskHandlerLambdaFunction.Arn
+
       #Events:
       #  SengageWSWebService:
       #      Type: Api

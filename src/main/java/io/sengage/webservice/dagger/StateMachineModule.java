@@ -3,15 +3,18 @@ package io.sengage.webservice.dagger;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import com.amazonaws.services.stepfunctions.AWSStepFunctionsAsync;
+import com.amazonaws.services.stepfunctions.AWSStepFunctionsAsyncClientBuilder;
+
 import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class TaskModule {
+public class StateMachineModule {
 	
 	public static final String STATE_MACHINE_EXE_ROLE_ARN = "StateMachineExecutionRoleArn";
 	public static final String GAME_TASK_HANDLER_LAMBDA_ARN = "GameTaskHandlerLambdaArn";
-	
+
 	@Singleton
 	@Provides
 	@Named(STATE_MACHINE_EXE_ROLE_ARN)
@@ -26,5 +29,9 @@ public class TaskModule {
 		return System.getenv(GAME_TASK_HANDLER_LAMBDA_ARN);
 	}
 	
-	
+	@Provides
+	@Singleton
+	static AWSStepFunctionsAsync provideAWSStepFunctionsAsync() {
+		return AWSStepFunctionsAsyncClientBuilder.defaultClient();
+	}
 }

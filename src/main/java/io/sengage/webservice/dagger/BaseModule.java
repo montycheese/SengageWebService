@@ -34,7 +34,7 @@ public class BaseModule {
 
 	public static final String CREATE_GAME_REQUEST_LABEL = "CreateGameRequest";
 	public static final String GAME_SPECIFIC_STATE_LABEL = "GameSpecificState";
-
+	
 	@Provides
 	@Singleton
 	static LambdaRouter provideLambdaRouter() {
@@ -96,11 +96,5 @@ public class BaseModule {
 	@Singleton
 	static AmazonCloudWatchEventsAsync provideAmazonCloudWatchEventsAsync() {
 		return AmazonCloudWatchEventsAsyncClientBuilder.defaultClient();
-	}
-	
-	@Provides
-	@Singleton
-	static AWSStepFunctionsAsync provideAWSStepFunctionsAsync() {
-		return AWSStepFunctionsAsyncClientBuilder.defaultClient();
 	}
 }
