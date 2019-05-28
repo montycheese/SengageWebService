@@ -242,7 +242,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Authorizer
   LambdaAuthorizerFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      CodeUri: s3://deployment-us-east-1-lambdas-1/ab99808a1be24bd5cfe2541c3ec89655
       Handler: io.sengage.webservice.function.LambdaAuthorizer
       MemorySize: 256
       Policies:
@@ -263,7 +263,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnConnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      CodeUri: s3://deployment-us-east-1-lambdas-1/ab99808a1be24bd5cfe2541c3ec89655
       Handler: io.sengage.webservice.function.OnConnect
       MemorySize: 256
       Policies:
@@ -283,7 +283,7 @@ Resources:
     Type: AWS::Lambda::Permission
   OnDisconnectFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      CodeUri: s3://deployment-us-east-1-lambdas-1/ab99808a1be24bd5cfe2541c3ec89655
       Handler: io.sengage.webservice.function.OnDisconnect
       MemorySize: 256
       Policies:
@@ -373,7 +373,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Integration
   SendMessageFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      CodeUri: s3://deployment-us-east-1-lambdas-1/ab99808a1be24bd5cfe2541c3ec89655
       Handler: io.sengage.webservice.function.SendMessage
       MemorySize: 256
       Policies:
@@ -413,7 +413,7 @@ Resources:
   SengageWSLambdaFunction:
     DependsOn: SengamesGameTaskHandlerLambdaFunction
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      CodeUri: s3://deployment-us-east-1-lambdas-1/ab99808a1be24bd5cfe2541c3ec89655
       Environment:
         Variables:
           GameTaskHandlerLambdaArn:
@@ -446,7 +446,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Api
   SengamesCWEventHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      CodeUri: s3://deployment-us-east-1-lambdas-1/ab99808a1be24bd5cfe2541c3ec89655
       FunctionName: SengamesCWEventHandlerLambdaFunction
       Handler: io.sengage.webservice.events.CWEventsHandler
       MemorySize: 320
@@ -459,7 +459,7 @@ Resources:
     Type: AWS::Serverless::Function
   SengamesGameTaskHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/08dd747b1165a5c57d6dc76a6b853b66
+      CodeUri: s3://deployment-us-east-1-lambdas-1/ab99808a1be24bd5cfe2541c3ec89655
       FunctionName: SengamesGameTaskHandlerLambdaFunction
       Handler: io.sengage.webservice.function.GameTaskHandler
       MemorySize: 320

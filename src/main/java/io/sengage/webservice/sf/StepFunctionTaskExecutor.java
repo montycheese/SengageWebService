@@ -26,6 +26,7 @@ public class StepFunctionTaskExecutor {
 	private final AWSStepFunctionsAsync sfClient;
 	private final String targetLambdaArn;
 	private final String stateMachineExecutionArn;
+	private final String WAIT_STATE_NAME = "WaitForTimeStamp";
 	
 	@Inject
 	public StepFunctionTaskExecutor(Gson gson, AWSStepFunctionsAsync sfClient,
@@ -48,13 +49,55 @@ public class StepFunctionTaskExecutor {
 		
 		sfClient.startExecutionAsync(startExecutionRequest);
 		
-		
 		return stateMachineArn;
 	}
 	
 	public String executeGameTimeUpStateMachine(GameItem gameItem) {
+		StartExecutionRequest startExecutionRequest = new StartExecutionRequest();
+		String stateMachineArn = createGameTimeUpStateMachine(gameItem);
 		
-		return null;
+		startExecutionRequest.withName("EndGame-" + gameItem.getGameId())
+		.withStateMachineArn(stateMachineArn);
+		sfClient.startExecutionAsync(startExecutionRequest);
+		
+		return stateMachineArn;
+	}
+	
+	private String createGameTimeUpStateMachine(GameItem gameItem) {
+		int secondsToWaitToExpireGame = gameItem.getDuration();
+		CreateStateMachineRequest req = new CreateStateMachineRequest();
+		
+		String invokeExpireGameLambdaStateName = "ExpireGameState";
+		
+		StateMachine expireGameStateMachine = StateMachine.builder()
+		.startAt(WAIT_STATE_NAME)
+		.timeoutSeconds(gameItem.getDuration() * 2)
+		.comment("StateMachine to trigger expire game")
+		.state(WAIT_STATE_NAME, WaitState.builder()
+				.comment("Waiting state to allow players to join before starting.")
+				.waitFor(WaitForSeconds.builder().seconds(secondsToWaitToExpireGame))
+				.transition(NextStateTransition.builder().nextStateName(invokeExpireGameLambdaStateName)))
+		.state(invokeExpireGameLambdaStateName, TaskState.builder()
+				.comment("State that triggers a task to expire the game.")
+				.resource(targetLambdaArn)
+				.parameters(gson.toJson(GameContextInput.builder()
+						.eventDetail(EventDetail.GAME_OUT_OF_TIME)
+						.game(gameItem.getGame())
+						.gameId(gameItem.getGameId())
+						.build(), GameContextInput.class))
+				.transition(EndTransition.builder()))
+		.build();
+		
+		
+		req.withDefinition(expireGameStateMachine)
+		.withName("ExpireGame-" + gameItem.getGameId())
+		.withRoleArn(stateMachineExecutionArn);
+		
+		CreateStateMachineResult result = sfClient.createStateMachine(req);
+		
+		System.out.println("Successfully created state machine with arn:" + result.getStateMachineArn());
+		
+		return result.getStateMachineArn();
 	}
 	
 	private String createStateMachine(GameItem gameItem) {
@@ -62,12 +105,11 @@ public class StepFunctionTaskExecutor {
 		CreateStateMachineRequest req = new CreateStateMachineRequest();
 		
 		String invokeStartGameLambdaStateName = "StartGameState";
-		String waitStateName = "WaitForTimeStamp";
 		StateMachine startGameStateMachine = StateMachine.builder()
-		.startAt(waitStateName)
+		.startAt(WAIT_STATE_NAME)
 		.timeoutSeconds(gameItem.getDuration() * 2) // give it game time * 2 for buffer
 		.comment("State Machine to Trigger starting game")
-		.state(waitStateName, WaitState.builder()
+		.state(WAIT_STATE_NAME, WaitState.builder()
 				.comment("Waiting state to allow players to join before starting.")
 				.waitFor(WaitForSeconds.builder().seconds(secondsToWaitForPlayersToJoin))
 				.transition(NextStateTransition.builder().nextStateName(invokeStartGameLambdaStateName)))
