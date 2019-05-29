@@ -24,6 +24,7 @@ import io.sengage.webservice.model.PlayerStatus;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
 import io.sengage.webservice.model.singlestroke.SingleStrokeEndGameResult;
+import io.sengage.webservice.model.singlestroke.SingleStrokeFinalGameResults;
 import io.sengage.webservice.model.singlestroke.SingleStrokePlayer;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
@@ -80,13 +81,14 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 		return ServerlessOutput.builder()
 			.headers(getOutputHeaders())
 			.statusCode(HttpStatus.SC_OK)
-			.body(gson.toJson(response, GetFinalGameResultsResponse.class))
+			.body(gson.toJson(response, response.getClass()))
 			.build();
 	}
 	
 	private GetFinalGameResultsResponse buildResponse(Game game, List<? extends Player> playerDatum) {
 		
 		List<? extends EndGameResult> results;
+		GetFinalGameResultsResponse response;
 		switch (game) {
 		case SINGLE_STROKE:
 			results = playerDatum.stream()
@@ -103,16 +105,17 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 					.build()
 					))
 			.collect(Collectors.toList());
-			
+			// todo calculate distance covered
+			double distanceCovered = 1337;
+			response = new SingleStrokeFinalGameResults(results, distanceCovered, playerDatum.size());
 			break;
 		case FLAPPY_BIRD_BR:
 		default:
 			throw new IllegalArgumentException("Not supported: " + game);
 		}
 		
-		return GetFinalGameResultsResponse.builder()
-				.results(results)
-				.build();
+		response.setResults(results);
+		return response;
 	}
 
 }
