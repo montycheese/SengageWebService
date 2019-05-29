@@ -31,7 +31,9 @@ public class GameUpdateHandlerFactory {
 		switch (game) {
 		case SINGLE_STROKE:
 			return new SingleStrokeGameUpdateHandler(playerDataProvider, gameDataProvider, cwe, gson);
+		case FLAPPY_BIRD_BR:
+		default:
+			throw new IllegalArgumentException("Could not find handler for type: " + game);
 		}
-		throw new IllegalArgumentException("Could not find handler for type: " + game);
 	}
 }

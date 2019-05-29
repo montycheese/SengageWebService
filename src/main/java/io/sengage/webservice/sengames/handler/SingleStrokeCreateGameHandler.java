@@ -1,7 +1,5 @@
 package io.sengage.webservice.sengames.handler;
 
-import com.google.gson.Gson;
-
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
@@ -16,14 +14,12 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 	
 	private final GameDataProvider gameDataProvider;
 	private final TwitchClient twitchClient;
-	private final Gson gson;
 	private final StepFunctionTaskExecutor sfExecutor;
 	
 	public SingleStrokeCreateGameHandler(GameDataProvider gameDataProvider, TwitchClient twitchClient,
-			Gson gson, StepFunctionTaskExecutor sfExecutor) {
+			StepFunctionTaskExecutor sfExecutor) {
 		this.gameDataProvider = gameDataProvider;
 		this.twitchClient = twitchClient;
-		this.gson = gson;
 		this.sfExecutor = sfExecutor;
 	}
 
@@ -33,7 +29,7 @@ public class SingleStrokeCreateGameHandler extends CreateGameHandler {
 			StreamContext streamContext) {
 		
 		// create game persistence object
-		GameItem item = GameItem.from(game,  duration, streamContext);
+		GameItem item = GameItem.from(game, parameters, duration, streamContext);
 		
 		gameDataProvider.createGame(item);
 		// send pubsub message

@@ -12,6 +12,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIgnore;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedJson;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBVersionAttribute;
 
 import lombok.AllArgsConstructor;
@@ -43,6 +44,8 @@ public class GameItem {
 	private Instant createdAt;
 	@DynamoDBTypeConverted(converter = InstantConverter.class)
 	private Instant modifiedAt;
+	@DynamoDBTypeConvertedJson
+	private GameSpecificParameters gameSpecificParameters;
 	private int duration;
 	private String startGameStateMachineExecutionArn;
 	private String gameTimeUpStateMachineExecutionArn;
@@ -57,11 +60,13 @@ public class GameItem {
 		return version;
 	}
 	
-	public static GameItem from(Game game, int duration, StreamContext streamContext) {
+	public static GameItem from(Game game, GameSpecificParameters parameters, 
+			int duration, StreamContext streamContext) {
 		Instant now = Instant.now();
 		
 		return GameItem.builder()
 		.game(game)
+		.gameSpecificParameters(parameters)
 		.duration(duration)
 		.gameStatus(GameStatus.INIT)
 		.opaqueId(streamContext.getOpaqueId())

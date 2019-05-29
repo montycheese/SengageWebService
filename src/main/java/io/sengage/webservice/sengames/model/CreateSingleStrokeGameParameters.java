@@ -10,4 +10,7 @@ import io.sengage.webservice.model.GameSpecificParameters;
 @NoArgsConstructor
 public class CreateSingleStrokeGameParameters implements GameSpecificParameters {
 	public String type = "SINGLE_STROKE";
+	
+	private String image; // todo enum
+	
 }

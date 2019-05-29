@@ -7,6 +7,7 @@ import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.JoinGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.StartGameMessage;
+import io.sengage.webservice.utils.GameItemToStartGamePubSubMessageMapper;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -94,11 +95,13 @@ public final class TwitchClient {
 		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, gameItem.getChannelId());		
 		GenericUrl url = new GenericUrl(urlString);
 
+		StartGameMessage message = GameItemToStartGamePubSubMessageMapper.get(gameItem);
+		
 		HttpContent content = new JsonHttpContent(jsonFactory, 
 				PubSubMessage.builder()
 				.contentType(PubSubMessage.JSON)
 				.targets(Arrays.asList("broadcast"))
-				.message(gson.toJson(StartGameMessage.from(gameItem)))
+				.message(gson.toJson(message))
 				.build());
 		
 		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(gameItem.getChannelId()));

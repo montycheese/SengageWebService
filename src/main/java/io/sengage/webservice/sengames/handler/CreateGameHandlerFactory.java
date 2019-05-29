@@ -7,22 +7,17 @@ import io.sengage.webservice.twitch.TwitchClient;
 
 import javax.inject.Inject;
 
-import com.google.gson.Gson;
-
 public class CreateGameHandlerFactory {
 	
 	private final GameDataProvider gameDataProvider;
-	private final Gson gson;
 	private final TwitchClient twitchClient;
 	private final StepFunctionTaskExecutor sfExecutor;
 	
 	@Inject
 	public CreateGameHandlerFactory(GameDataProvider gameDataProvider,
-			Gson gson,
 			TwitchClient twitchClient,
 			StepFunctionTaskExecutor sfExecutor) {
 		this.gameDataProvider = gameDataProvider;
-		this.gson = gson;
 		this.twitchClient = twitchClient;
 		this.sfExecutor = sfExecutor;
 	}
@@ -32,7 +27,6 @@ public class CreateGameHandlerFactory {
 			case SINGLE_STROKE:
 				return new SingleStrokeCreateGameHandler(gameDataProvider,
 						twitchClient,
-						gson,
 						sfExecutor
 						);
 			case FLAPPY_BIRD_BR:

@@ -23,6 +23,14 @@ public class StartGameMessage implements PubSubGameMessage {
 	private GameStatus gameStatus;
 	private long gameEndTimeEpochMilli;
 	
+	public StartGameMessage(GameItem gameItem) {
+		this.gameId = gameItem.getGameId();
+		this.game = gameItem.getGame();
+		this.gameStatus = gameItem.getGameStatus();
+		this.gameEndTimeEpochMilli = gameItem.getCreatedAt().plus(gameItem.getDuration(), ChronoUnit.SECONDS).toEpochMilli();
+		
+	}
+	
 	public static StartGameMessage from(GameItem gameItem) {
 		return StartGameMessage.builder()
 				.gameId(gameItem.getGameId())
