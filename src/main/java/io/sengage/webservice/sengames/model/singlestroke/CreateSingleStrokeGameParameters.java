@@ -1,4 +1,4 @@
-package io.sengage.webservice.sengames.model;
+package io.sengage.webservice.sengames.model.singlestroke;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

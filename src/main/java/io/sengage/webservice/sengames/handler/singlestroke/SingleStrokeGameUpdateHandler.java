@@ -1,4 +1,4 @@
-package io.sengage.webservice.sengames.handler;
+package io.sengage.webservice.sengames.handler.singlestroke;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,15 +19,16 @@ import io.sengage.webservice.model.GameSpecificState;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.Player;
 import io.sengage.webservice.model.PlayerStatus;
-import io.sengage.webservice.model.SingleStrokePlayer;
 import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.model.GameItem.GameItemDigest;
+import io.sengage.webservice.model.singlestroke.SingleStrokePlayer;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
+import io.sengage.webservice.sengames.handler.GameUpdateHandler;
 import io.sengage.webservice.sengames.model.HandleGameUpdateResponse;
 import io.sengage.webservice.sengames.model.SendLineRequest;
-import io.sengage.webservice.sengames.model.SingleStrokeGameUpdateResponse;
 import io.sengage.webservice.sengames.model.Stroke;
+import io.sengage.webservice.sengames.model.singlestroke.SingleStrokeGameUpdateResponse;
 import io.sengage.webservice.utils.Constants;
 
 public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {

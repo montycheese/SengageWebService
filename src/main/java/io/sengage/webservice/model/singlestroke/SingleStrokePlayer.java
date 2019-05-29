@@ -1,5 +1,7 @@
-package io.sengage.webservice.model;
+package io.sengage.webservice.model.singlestroke;
 
+import io.sengage.webservice.model.Player;
+import io.sengage.webservice.model.PlayerStatus;
 import io.sengage.webservice.sengames.model.StrokeType;
 
 import java.time.Instant;

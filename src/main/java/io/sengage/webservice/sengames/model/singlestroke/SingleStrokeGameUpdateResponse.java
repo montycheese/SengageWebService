@@ -1,4 +1,7 @@
-package io.sengage.webservice.sengames.model;
+package io.sengage.webservice.sengames.model.singlestroke;
+
+import io.sengage.webservice.sengames.model.HandleGameUpdateResponse;
+import io.sengage.webservice.sengames.model.Stroke;
 
 import java.util.List;
 

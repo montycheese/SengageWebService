@@ -5,6 +5,7 @@ import javax.inject.Inject;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
+import io.sengage.webservice.sengames.handler.singlestroke.SingleStrokeEndGameHandler;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
 

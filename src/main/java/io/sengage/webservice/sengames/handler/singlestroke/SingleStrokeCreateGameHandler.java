@@ -1,4 +1,4 @@
-package io.sengage.webservice.sengames.handler;
+package io.sengage.webservice.sengames.handler.singlestroke;
 
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.Game;
@@ -7,6 +7,7 @@ import io.sengage.webservice.model.GameSpecificParameters;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.persistence.GameDataProvider;
+import io.sengage.webservice.sengames.handler.CreateGameHandler;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
 

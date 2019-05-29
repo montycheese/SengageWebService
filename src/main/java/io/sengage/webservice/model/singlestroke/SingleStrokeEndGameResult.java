@@ -1,7 +1,8 @@
-package io.sengage.webservice.model;
+package io.sengage.webservice.model.singlestroke;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.sengames.model.Stroke;
 
 @EqualsAndHashCode(callSuper=false)

@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
+import io.sengage.webservice.sengames.handler.singlestroke.SingleStrokeGameUpdateHandler;
 
 public class GameUpdateHandlerFactory {
 	

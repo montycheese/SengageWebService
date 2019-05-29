@@ -1,6 +1,6 @@
 package io.sengage.webservice.model;
 
-import io.sengage.webservice.sengames.model.CreateSingleStrokeGameParameters;
+import io.sengage.webservice.sengames.model.singlestroke.CreateSingleStrokeGameParameters;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;

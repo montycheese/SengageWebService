@@ -18,7 +18,7 @@ import io.sengage.webservice.exception.ItemAlreadyExistsException;
 import io.sengage.webservice.exception.ItemNotFoundException;
 import io.sengage.webservice.model.Player;
 import io.sengage.webservice.model.PlayerStatus;
-import io.sengage.webservice.model.SingleStrokePlayer;
+import io.sengage.webservice.model.singlestroke.SingleStrokePlayer;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 
 @AllArgsConstructor

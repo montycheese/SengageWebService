@@ -2,7 +2,7 @@ package io.sengage.webservice.utils;
 
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.Player;
-import io.sengage.webservice.model.SingleStrokePlayer;
+import io.sengage.webservice.model.singlestroke.SingleStrokePlayer;
 
 import java.util.Map;
 

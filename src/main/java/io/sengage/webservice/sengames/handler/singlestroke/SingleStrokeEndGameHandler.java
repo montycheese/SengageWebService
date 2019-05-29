@@ -1,4 +1,4 @@
-package io.sengage.webservice.sengames.handler;
+package io.sengage.webservice.sengames.handler.singlestroke;
 
 
 import lombok.AllArgsConstructor;
@@ -7,6 +7,7 @@ import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
+import io.sengage.webservice.sengames.handler.EndGameHandler;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
