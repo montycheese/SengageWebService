@@ -39,19 +39,18 @@ public class JoinGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 
 	@Override
 	public ServerlessOutput handleRequest(ServerlessInput serverlessInput, Context context) {
-		// TODO Auto-generated method stub
 		logger = context.getLogger();
 		logger.log("JoinGame(): input: " + serverlessInput);
 		
 		
 		DecodedJWT jwt = authHelper.authenticateRequestAndVerifyToken(parseAuthTokenFromHeaders(serverlessInput.getHeaders()));
 		
-		// todo addd username here
-		StreamContext streamContext = getStreamInfo(jwt);
-		
 		JoinGameRequest request = gson.fromJson(serverlessInput.getBody(), JoinGameRequest.class);
 		boolean joinedSuccessfully = true;
 		String failureReason = null;
+		
+		StreamContext streamContext = getStreamInfo(jwt);
+		streamContext.setUserName(request.getUserName());
 		try {
 			joinGameHandler.handleJoinGame(request.getGameId(), streamContext);
 			// todo catch certain exceptions only
