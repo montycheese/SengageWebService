@@ -8,7 +8,6 @@ import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 import io.sengage.webservice.sengames.handler.EndGameHandler;
-import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
 
@@ -56,12 +55,7 @@ public class SingleStrokeEndGameHandler implements EndGameHandler {
 	
 	private void handleEndGame(GameItem gameItem) {		
 		try {		
-			boolean success = twitchClient.notifyChannelGameEnded(gameItem.getChannelId(), 
-					EndGameMessage.builder()
-					.game(gameItem.getGame())
-					.gameId(gameItem.getGameId())
-					.gameStatus(gameItem.getGameStatus())
-					.build());
+			boolean success = twitchClient.notifyChannelGameEnded(gameItem);
 			
 			try {
 				gameDataProvider.updateGame(gameItem);
