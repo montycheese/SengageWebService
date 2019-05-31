@@ -23,6 +23,7 @@ public class JoinGameMessage implements PubSubGameMessage {
 	private Game game;
 	private GameStatus gameStatus;
 	private int waitDuration;
+	private int gameDuration;
 	private long gameEndTimeEpochMilli;
 	
 	public static JoinGameMessage from(GameItem gameItem) {
@@ -31,6 +32,7 @@ public class JoinGameMessage implements PubSubGameMessage {
 				.gameId(gameItem.getGameId())
 				.game(gameItem.getGame())
 				.gameStatus(GameStatus.WAITING_FOR_PLAYERS)
+				.gameDuration(gameItem.getDuration())
 				.gameEndTimeEpochMilli(gameItem.getCreatedAt().plus(gameItem.getDuration(), ChronoUnit.SECONDS).toEpochMilli())
 				.waitDuration(waitDuration)
 				.build();
