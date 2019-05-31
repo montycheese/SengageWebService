@@ -29,10 +29,14 @@ import io.sengage.webservice.model.singlestroke.SingleStrokePlayer;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 import io.sengage.webservice.sengames.model.Stroke;
+import io.sengage.webservice.sengames.model.StrokeType;
 import io.sengage.webservice.utils.GameToPlayerClassMapper;
 
 public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessOutput>{
 
+	
+	private static final double MULTIPLIER = 250.0;
+	
 	@Inject
 	Gson gson;
 	
@@ -105,8 +109,8 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 					.build()
 					))
 			.collect(Collectors.toList());
-			// todo calculate distance covered
-			double distanceCovered = 1337;
+			@SuppressWarnings("unchecked")
+			double distanceCovered = calculateDistanceCovered((List<SingleStrokeEndGameResult>) results);
 			response = new SingleStrokeFinalGameResults(results, distanceCovered, playerDatum.size());
 			break;
 		case FLAPPY_BIRD_BR:
@@ -116,6 +120,31 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 		
 		response.setResults(results);
 		return response;
+	}
+	
+	private double calculateDistanceCovered(List<SingleStrokeEndGameResult> results) {
+		double distance = 0.0;
+		
+		for (SingleStrokeEndGameResult result : results) {
+			Stroke stroke = result.getStroke();
+			double deltaX = stroke.getPointA().get(0) - stroke.getPointB().get(0);
+			double deltaY = stroke.getPointA().get(1) - stroke.getPointB().get(1);
+			
+			if (StrokeType.LINE.equals(stroke.getStrokeType())) {
+				distance += Math.floor(
+						Math.sqrt(
+							Math.pow(deltaX, 2) + Math.pow(deltaY, 2)
+								) * MULTIPLIER);
+			} else if (StrokeType.CIRCLE.equals(stroke.getStrokeType())) {
+				distance += Math.floor(
+						Math.sqrt(
+							Math.pow((deltaX / 2), 2) + Math.pow((deltaY / 2), 2)
+						) * 2 * Math.PI * MULTIPLIER
+				);
+			}
+		}
+		
+		return distance;
 	}
 
 }
