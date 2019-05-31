@@ -58,7 +58,8 @@ public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
 		
 		if (game.getGameStatus().isOnOrAfter(GameStatus.COMPLETED)) {
 			throw new GameCompletedException(String.format("Game %s already completed. Could not accept request.", gameId));
-		} else if (game.getGameStatus().isBefore(GameStatus.IN_PROGRESS)) {
+		} else if (game.getGameStatus().isBefore(GameStatus.WAITING_FOR_PLAYERS)) {
+			// allow players to submit in the waiting for player phase in single stroke.
 			throw new IllegalStateException("Cannot submit game input before game is started");
 		}
 		
@@ -103,7 +104,9 @@ public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
 		int playersRemaining = 
 				playerDataProvider.getNumberOfPlayersInGame(gameId, PlayerStatus.PLAYING);
 		
-		if (playersRemaining <= 0) {
+		// we don't want the game to end if a player joins and submits a stroke before any other player has the chance
+		// to join the game
+		if (playersRemaining <= 0 && GameStatus.IN_PROGRESS.equals(game.getGameStatus())) {
 			System.out.println("All players are finished, creating CWE event.");
 			notifyAllPlayersAreFinished(game);
 		}
