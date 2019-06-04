@@ -13,7 +13,7 @@ public class GameToWaitForPlayersToJoinDurationMapper {
 	
 	static {
 		gameToWaitForPlayersToJoinDuration = ImmutableMap.<Game, Integer>builder()
-				.put(Game.SINGLE_STROKE, 1)
+				.put(Game.SINGLE_STROKE, 15)
 				.put(Game.FLAPPY_BIRD_BR, 15)
 				.build();
 	}
