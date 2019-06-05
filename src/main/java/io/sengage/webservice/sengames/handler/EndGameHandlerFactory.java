@@ -4,7 +4,7 @@ import javax.inject.Inject;
 
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.persistence.GameDataProvider;
-import io.sengage.webservice.persistence.PlayerDataProvider;
+import io.sengage.webservice.sengames.handler.flappybird.FlappyBirdEndGameHandler;
 import io.sengage.webservice.sengames.handler.singlestroke.SingleStrokeEndGameHandler;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
@@ -13,17 +13,14 @@ public class EndGameHandlerFactory {
 	
 	private final TwitchClient twitchClient;
 	private final GameDataProvider gameDataProvider;
-	private final PlayerDataProvider playerDataProvider;
 	private final StepFunctionTaskExecutor sfExecutor;
 
 	@Inject
 	public EndGameHandlerFactory(TwitchClient twitchClient, 
 			GameDataProvider gameDataProvider,
-			PlayerDataProvider playerDataProvider,
 			StepFunctionTaskExecutor sfExecutor) {
 		this.twitchClient = twitchClient;
 		this.gameDataProvider = gameDataProvider;
-		this.playerDataProvider = playerDataProvider;
 		this.sfExecutor = sfExecutor;
 		
 	}
@@ -32,8 +29,9 @@ public class EndGameHandlerFactory {
 		
 		switch (game) {
 		case SINGLE_STROKE:
-			return new SingleStrokeEndGameHandler(twitchClient, gameDataProvider, playerDataProvider, sfExecutor);
+			return new SingleStrokeEndGameHandler(gameDataProvider, twitchClient, sfExecutor);
 		case FLAPPY_BIRD_BR:
+			return new FlappyBirdEndGameHandler(gameDataProvider, twitchClient, sfExecutor);
 		default: 
 			throw new IllegalArgumentException("Game: " + game.name() + " not supported");
 		}

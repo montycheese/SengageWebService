@@ -4,11 +4,14 @@ import io.sengage.webservice.auth.JwtProvider;
 import io.sengage.webservice.auth.TwitchJWTField;
 import io.sengage.webservice.dagger.ExtensionModule;
 import io.sengage.webservice.model.GameItem;
+import io.sengage.webservice.model.Player;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.JoinGameMessage;
+import io.sengage.webservice.sengames.model.pubsub.PubSubGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.StartGameMessage;
 import io.sengage.webservice.utils.GameItemToEndgamePubSubMessageMapper;
 import io.sengage.webservice.utils.GameItemToStartGamePubSubMessageMapper;
+import io.sengage.webservice.utils.PlayerToPlayerCompletePubSubMessageMapper;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -160,6 +163,40 @@ public final class TwitchClient {
 		// TODO
 	}
 	
+	public boolean notifyChannelPlayerComplete(GameItem gameItem, Player player) {
+		boolean success = false;
+		String channelId = gameItem.getChannelId();
+		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);		
+		GenericUrl url = new GenericUrl(urlString);
+
+		
+		PubSubGameMessage message = PlayerToPlayerCompletePubSubMessageMapper.get(gameItem, player);
+		
+		HttpContent content = new JsonHttpContent(jsonFactory, 
+				PubSubMessage.builder()
+				.contentType(PubSubMessage.JSON)
+				.targets(Arrays.asList("broadcast"))
+				.message(gson.toJson(message, message.getClass()))
+				.build());
+		
+		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(channelId));
+
+		try {
+			HttpRequest request = requestFactory.buildPostRequest(url, content);
+			initHttpHeaders(request, authToken);
+			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
+			
+			HttpResponse response =  request.execute();
+			success = response.isSuccessStatusCode();
+			response.disconnect();
+		} catch (IOException e) {
+			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
+					channelId, urlString), e);
+		}
+		
+		return success;
+	}
+	
 	public boolean sendExtensionChatMessage(String channelId, String message) {
 		boolean success = false;
 		String urlString = String.format("%s/extensions/%s/%s/channels/%s/chat", 
@@ -185,7 +222,7 @@ public final class TwitchClient {
 					channelId, urlString), e);
 		}
 		return success;
-	} 
+	}
 	
 	private Map<TwitchJWTField, Object> getClaimsForChannelMessage(String channelId) {
 		Map<String, Object> pubsubPerms = new HashMap<>();

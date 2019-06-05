@@ -68,8 +68,6 @@ public class UpdateGameState extends BaseLambda<ServerlessInput, ServerlessOutpu
 			throw new RuntimeException(e);
 		}
 		
-		// do a check to see if all users are done playing and end the game if so.
-		
         return ServerlessOutput.builder()
         		.headers(getOutputHeaders())
         		.statusCode(HttpStatus.SC_OK)

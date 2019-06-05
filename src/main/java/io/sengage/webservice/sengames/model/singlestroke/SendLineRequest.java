@@ -1,6 +1,5 @@
-package io.sengage.webservice.sengames.model;
+package io.sengage.webservice.sengames.model.singlestroke;
 
-import io.sengage.webservice.sengames.model.singlestroke.SingleStrokeGameSpecificState;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

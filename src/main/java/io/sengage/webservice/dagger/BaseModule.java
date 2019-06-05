@@ -19,11 +19,14 @@ import io.sengage.webservice.function.UpdateGameState;
 import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.model.GameSpecificParameters;
 import io.sengage.webservice.model.GameSpecificState;
+import io.sengage.webservice.model.flappybird.FlappyBirdEndGameResult;
 import io.sengage.webservice.model.singlestroke.SingleStrokeEndGameResult;
 import io.sengage.webservice.router.LambdaRouter;
 import io.sengage.webservice.router.Resource;
-import io.sengage.webservice.sengames.model.SendLineRequest;
+import io.sengage.webservice.sengames.model.flappybird.CreateFlappyBirdGameParameters;
+import io.sengage.webservice.sengames.model.flappybird.SendFlightResultRequest;
 import io.sengage.webservice.sengames.model.singlestroke.CreateSingleStrokeGameParameters;
+import io.sengage.webservice.sengames.model.singlestroke.SendLineRequest;
 import io.sengage.webservice.utils.gson.InstantTypeConverter;
 import io.sengage.webservice.utils.gson.RuntimeTypeAdapterFactory;
 import dagger.Module;
@@ -83,7 +86,8 @@ public class BaseModule {
 	static TypeAdapterFactory provideRuntimeAdapterFactory() {
 		return RuntimeTypeAdapterFactory
 				.of(GameSpecificParameters.class, "type")
-				.registerSubtype(CreateSingleStrokeGameParameters.class, "SINGLE_STROKE");
+				.registerSubtype(CreateSingleStrokeGameParameters.class, CreateSingleStrokeGameParameters.type)
+				.registerSubtype(CreateFlappyBirdGameParameters.class, CreateFlappyBirdGameParameters.type);
 	}
 	
 	@Provides
@@ -92,7 +96,8 @@ public class BaseModule {
 	static TypeAdapterFactory provideGameSpecificStateRuntimeAdapterFactory() {
 		return RuntimeTypeAdapterFactory
 				.of(GameSpecificState.class, "type")
-				.registerSubtype(SendLineRequest.class, SendLineRequest.type);
+				.registerSubtype(SendLineRequest.class, SendLineRequest.type)
+				.registerSubtype(SendFlightResultRequest.class, SendFlightResultRequest.type);
 	}
 	
 	@Provides
@@ -101,7 +106,8 @@ public class BaseModule {
 	static TypeAdapterFactory provideEndGameResultRuntimeAdapterFactory() {
 		return RuntimeTypeAdapterFactory
 				.of(EndGameResult.class, "type")
-				.registerSubtype(SingleStrokeEndGameResult.class, SingleStrokeEndGameResult.type);
+				.registerSubtype(SingleStrokeEndGameResult.class, SingleStrokeEndGameResult.type)
+				.registerSubtype(FlappyBirdEndGameResult.class, FlappyBirdEndGameResult.type);
 	}
 	
 	@Provides

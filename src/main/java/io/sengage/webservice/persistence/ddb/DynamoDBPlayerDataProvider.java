@@ -18,6 +18,7 @@ import io.sengage.webservice.exception.ItemAlreadyExistsException;
 import io.sengage.webservice.exception.ItemNotFoundException;
 import io.sengage.webservice.model.Player;
 import io.sengage.webservice.model.PlayerStatus;
+import io.sengage.webservice.model.flappybird.FlappyBirdPlayer;
 import io.sengage.webservice.model.singlestroke.SingleStrokePlayer;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 
@@ -87,8 +88,6 @@ public class DynamoDBPlayerDataProvider implements PlayerDataProvider {
 
 	@Override
 	public List<? extends Player> listPlayers(String gameId, PlayerStatus status, Class<? extends Player> clazz) {
-		// TODO Auto-generated method stub
-		
 		String val = ":val1";
 		String val2 = ":val2";
 		String keyConditionalExpression = String.format("%s = %s and %s = %s", 
@@ -109,9 +108,15 @@ public class DynamoDBPlayerDataProvider implements PlayerDataProvider {
 					.withKeyConditionExpression(keyConditionalExpression)
 					.withExpressionAttributeValues(eav);
 			return mapper.query(SingleStrokePlayer.class, q);
+		} else if (clazz.equals(FlappyBirdPlayer.class)) {
+			DynamoDBQueryExpression<FlappyBirdPlayer> q = new DynamoDBQueryExpression<FlappyBirdPlayer>()				
+					.withIndexName(Player.GAME_ID_PLAYER_STATUS_INDEX)
+					.withKeyConditionExpression(keyConditionalExpression)
+					.withExpressionAttributeValues(eav);
+			return mapper.query(FlappyBirdPlayer.class, q);
 		}
 		
-		return null;
+		throw new IllegalArgumentException("Unsupported class: " + clazz.getName());
 		
 	}
 

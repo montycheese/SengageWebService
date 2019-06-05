@@ -1,5 +1,4 @@
-package io.sengage.webservice.sengames.handler.singlestroke;
-
+package io.sengage.webservice.sengames.handler.flappybird;
 
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.GameItem;
@@ -9,19 +8,17 @@ import io.sengage.webservice.sengames.handler.EndGameHandler;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
 
-public class SingleStrokeEndGameHandler extends EndGameHandler {
-
+public class FlappyBirdEndGameHandler extends EndGameHandler {
 	private final TwitchClient twitchClient;
 	private final StepFunctionTaskExecutor sfExecutor;
 
-	public SingleStrokeEndGameHandler(GameDataProvider gameDataProvider,
+	public FlappyBirdEndGameHandler(GameDataProvider gameDataProvider,
 			TwitchClient twitchClient,
 			StepFunctionTaskExecutor sfExecutor) {
 		super(gameDataProvider);
 		this.twitchClient = twitchClient;
 		this.sfExecutor = sfExecutor;
 	}
-	
 	
 	@Override
 	protected void handleEndGame(GameItem gameItem) {		
@@ -46,5 +43,4 @@ public class SingleStrokeEndGameHandler extends EndGameHandler {
 			sfExecutor.cleanUpGameStateMachineResources(gameItem);
 		}
 	}
-	
 }

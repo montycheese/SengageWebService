@@ -23,13 +23,17 @@ import io.sengage.webservice.model.Player;
 import io.sengage.webservice.model.PlayerStatus;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
+import io.sengage.webservice.model.flappybird.FlappyBirdEndGameResult;
+import io.sengage.webservice.model.flappybird.FlappyBirdFinalGameResults;
+import io.sengage.webservice.model.flappybird.FlappyBirdPlayer;
 import io.sengage.webservice.model.singlestroke.SingleStrokeEndGameResult;
 import io.sengage.webservice.model.singlestroke.SingleStrokeFinalGameResults;
 import io.sengage.webservice.model.singlestroke.SingleStrokePlayer;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
-import io.sengage.webservice.sengames.model.Stroke;
-import io.sengage.webservice.sengames.model.StrokeType;
+import io.sengage.webservice.sengames.model.flappybird.FlightResult;
+import io.sengage.webservice.sengames.model.singlestroke.Stroke;
+import io.sengage.webservice.sengames.model.singlestroke.StrokeType;
 import io.sengage.webservice.utils.GameToPlayerClassMapper;
 
 public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessOutput>{
@@ -107,18 +111,34 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 					.userName(ssPlayerData.getUserName())
 					.width(ssPlayerData.getWidth())
 					.build()
-					))
+					)
+			)
 			.collect(Collectors.toList());
 			@SuppressWarnings("unchecked")
 			double distanceCovered = calculateDistanceCovered((List<SingleStrokeEndGameResult>) results);
 			response = new SingleStrokeFinalGameResults(results, distanceCovered, playerDatum.size());
 			break;
 		case FLAPPY_BIRD_BR:
+			results = playerDatum.stream()
+			.map(data -> (FlappyBirdPlayer) data)
+			.map(fbPlayerData -> new FlappyBirdEndGameResult(
+					FlightResult.builder()
+					.attempt(fbPlayerData.getAttempt())
+					.character(fbPlayerData.getCharacter())
+					.distance(fbPlayerData.getDistance())
+					.userName(fbPlayerData.getUserName())
+					.opaqueId(fbPlayerData.getOpaqueId())
+					.build()
+					)
+			)
+			.collect(Collectors.toList());
+			
+			// TODO calculate distance covered
+			response = new FlappyBirdFinalGameResults(results, 0, playerDatum.size());
+			break;
 		default:
 			throw new IllegalArgumentException("Not supported: " + game);
 		}
-		
-		response.setResults(results);
 		return response;
 	}
 	

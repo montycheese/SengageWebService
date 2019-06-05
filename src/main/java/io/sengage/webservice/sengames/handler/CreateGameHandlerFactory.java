@@ -2,7 +2,6 @@ package io.sengage.webservice.sengames.handler;
 
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.persistence.GameDataProvider;
-import io.sengage.webservice.sengames.handler.singlestroke.SingleStrokeCreateGameHandler;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
 
@@ -26,12 +25,12 @@ public class CreateGameHandlerFactory {
 	public CreateGameHandler get(Game game){
 		switch (game) {
 			case SINGLE_STROKE:
-				return new SingleStrokeCreateGameHandler(gameDataProvider,
+				// fall through
+			case FLAPPY_BIRD_BR:
+				return new CreateGameHandlerImpl(gameDataProvider,
 						twitchClient,
 						sfExecutor
-						);
-			case FLAPPY_BIRD_BR:
-				// TODO
+				);
 			default:
 				throw new IllegalArgumentException("Could not find handler for: " + game.name());
 		}

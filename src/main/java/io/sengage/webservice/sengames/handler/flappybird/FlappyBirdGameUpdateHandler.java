@@ -1,8 +1,6 @@
-package io.sengage.webservice.sengames.handler.singlestroke;
+package io.sengage.webservice.sengames.handler.flappybird;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
 import com.google.gson.Gson;
@@ -15,41 +13,44 @@ import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.Player;
 import io.sengage.webservice.model.PlayerStatus;
 import io.sengage.webservice.model.StreamContext;
-import io.sengage.webservice.model.singlestroke.SingleStrokePlayer;
+import io.sengage.webservice.model.flappybird.FlappyBirdPlayer;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 import io.sengage.webservice.sengames.handler.GameUpdateHandler;
 import io.sengage.webservice.sengames.model.HandleGameUpdateResponse;
-import io.sengage.webservice.sengames.model.singlestroke.SendLineRequest;
-import io.sengage.webservice.sengames.model.singlestroke.SingleStrokeGameUpdateResponse;
-import io.sengage.webservice.sengames.model.singlestroke.Stroke;
+import io.sengage.webservice.sengames.model.flappybird.FlappyBirdGameUpdateResponse;
+import io.sengage.webservice.sengames.model.flappybird.SendFlightResultRequest;
+import io.sengage.webservice.twitch.TwitchClient;
 
-public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
+public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 
 	private final PlayerDataProvider playerDataProvider;
 	private final GameDataProvider gameDataProvider;
+	private final TwitchClient twitchClient;
 	
-	public SingleStrokeGameUpdateHandler(PlayerDataProvider playerDataProvider, 
+	public FlappyBirdGameUpdateHandler(PlayerDataProvider playerDataProvider, 
 			GameDataProvider gameDataProvider,
+			TwitchClient twitchClient,
 			AmazonCloudWatchEventsAsync cwe, 
 			Gson gson) {
 		super(cwe, gson);
 		this.playerDataProvider = playerDataProvider;
 		this.gameDataProvider = gameDataProvider;
+		this.twitchClient = twitchClient;
 	}
 	
 	@Override
-	public HandleGameUpdateResponse handleGameUpdate(String gameId, GameSpecificState state, StreamContext streamContext) 
+	public HandleGameUpdateResponse handleGameUpdate(String gameId,
+			GameSpecificState state, StreamContext streamContext)
 			throws GameCompletedException {
-		SendLineRequest request = (SendLineRequest) state;
+		SendFlightResultRequest request = (SendFlightResultRequest) state;
 		// make sure game is still accepting requests
 		Optional<GameItem> optionalGame = gameDataProvider.getGame(gameId);
 		GameItem game = optionalGame.orElseThrow(() -> new RuntimeException("Could not find game with id: " + gameId));
 		
 		if (game.getGameStatus().isOnOrAfter(GameStatus.COMPLETED)) {
 			throw new GameCompletedException(String.format("Game %s already completed. Could not accept request.", gameId));
-		} else if (game.getGameStatus().isBefore(GameStatus.WAITING_FOR_PLAYERS)) {
-			// allow players to submit in the waiting for player phase in single stroke.
+		} else if (game.getGameStatus().isBefore(GameStatus.IN_PROGRESS)) {
 			throw new IllegalStateException("Cannot submit game input before game is started");
 		}
 		
@@ -60,11 +61,12 @@ public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
 			throw new RuntimeException("Could not find player in game", e);
 		}
 		
+		// TODO since we want to let people submit more than once maybe remove this line of code.
 		if (!player.getPlayerStatus().equals(PlayerStatus.PLAYING)) {
 			throw new RuntimeException("Player already submitted a stroke " + player.getOpaqueId());
 		}
-		
-		player = new SingleStrokePlayer(
+		// TODO handle case where player submit more than 1 attempt and save highest scoring attempt
+		player = new FlappyBirdPlayer(
 				player.getGameId(),
 				player.getOpaqueId(),
 				player.getUserId(),
@@ -72,12 +74,10 @@ public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
 				player.getJoinedAt(),
 				player.getModifiedAt(),
 				PlayerStatus.COMPLETED,
-				request.getStroke().getStrokeType(),
-				request.getStroke().getPointA(),
-				request.getStroke().getPointB(),
-				request.getStroke().getWidth(),
-				request.getStroke().getColorHex()
-				);
+				request.getFlightResult().getCharacter(),
+				request.getFlightResult().getDistance(),
+				request.getFlightResult().getAttempt()
+		);
 		
 		try {
 			playerDataProvider.updateGamePlayer(player);
@@ -85,39 +85,19 @@ public class SingleStrokeGameUpdateHandler extends GameUpdateHandler {
 			throw new RuntimeException("Could not find player in game to update: " + gameId, e);
 		}
 		
-		// send existing strokes to player to display.
-		@SuppressWarnings("unchecked")
-		List<SingleStrokePlayer> playerDatum = (List<SingleStrokePlayer>)
-				playerDataProvider.listPlayers(gameId, PlayerStatus.COMPLETED, SingleStrokePlayer.class);
-		
 		// if last player send end game notification.
 		int playersRemaining = 
 				playerDataProvider.getNumberOfPlayersInGame(gameId, PlayerStatus.PLAYING);
 		
-		// we don't want the game to end if a player joins and submits a stroke before any other player has the chance
+		// we don't want the game to end if a player joins and submits the flight before any other player has the chance
 		// to join the game
 		if (playersRemaining <= 0 && GameStatus.IN_PROGRESS.equals(game.getGameStatus())) {
 			System.out.println("All players are finished, creating CWE event.");
 			notifyAllPlayersAreFinished(game);
+		} else {
+			twitchClient.notifyChannelPlayerComplete(game, player);
 		}
-		
-		return SingleStrokeGameUpdateResponse.builder()
-				.strokes(playerDatum.stream()
-						.map(SingleStrokeGameUpdateHandler::fromPlayerData)
-						.collect(Collectors.toList()))
-				.build();
-	}
-	
-	private static Stroke fromPlayerData(SingleStrokePlayer player) {
-		return Stroke.builder()
-				.colorHex(player.getColorHex())
-				.pointA(player.getPointA())
-				.pointB(player.getPointB())
-				.strokeType(player.getStrokeType())
-				.width(player.getWidth())
-				.userName(player.getUserName())
-				.opaqueId(player.getOpaqueId())
-				.build();
+		return new FlappyBirdGameUpdateResponse();
 	}
 
 }
