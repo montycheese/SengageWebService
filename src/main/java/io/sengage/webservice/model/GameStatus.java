@@ -9,7 +9,8 @@ public enum GameStatus {
 	COMPLETED(3),
 	TIME_UP(3),
 	TERMINAL(4),
-	ERROR_STATE(5)
+	ERROR_STATE(5),
+	CANCELLED(5)
 	;
 	
 	@Getter

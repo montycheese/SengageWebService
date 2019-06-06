@@ -40,6 +40,7 @@ public class GameItem {
 	private Game game;
 	@DynamoDBTypeConvertedEnum
 	private GameStatus gameStatus;
+	private String statusReason;
 	@DynamoDBTypeConverted(converter = InstantConverter.class)
 	private Instant createdAt;
 	@DynamoDBTypeConverted(converter = InstantConverter.class)

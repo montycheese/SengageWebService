@@ -3,8 +3,10 @@ package io.sengage.webservice.twitch;
 import io.sengage.webservice.auth.JwtProvider;
 import io.sengage.webservice.auth.TwitchJWTField;
 import io.sengage.webservice.dagger.ExtensionModule;
+import io.sengage.webservice.model.GameCancellationReason;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.Player;
+import io.sengage.webservice.sengames.model.pubsub.CancelGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.JoinGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.PubSubGameMessage;
@@ -158,9 +160,43 @@ public final class TwitchClient {
 		return success;
 	}
 	
-	public boolean notifyChannelGameCancelled() {
-		return false;
-		// TODO
+	public boolean notifyChannelGameCancelled(GameItem gameItem, GameCancellationReason cancellationReason) {
+		boolean success = false;
+		String channelId = gameItem.getChannelId();
+		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);		
+		GenericUrl url = new GenericUrl(urlString);
+
+		
+		CancelGameMessage message = CancelGameMessage.builder()
+				.game(gameItem.getGame())
+				.gameId(gameItem.getGameId())
+				.gameStatus(gameItem.getGameStatus())
+				.cancellationReason(cancellationReason)
+				.build();
+		
+		HttpContent content = new JsonHttpContent(jsonFactory, 
+				PubSubMessage.builder()
+				.contentType(PubSubMessage.JSON)
+				.targets(Arrays.asList("broadcast"))
+				.message(gson.toJson(message))
+				.build());
+		
+		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(channelId));
+
+		try {
+			HttpRequest request = requestFactory.buildPostRequest(url, content);
+			initHttpHeaders(request, authToken);
+			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
+			
+			HttpResponse response =  request.execute();
+			success = response.isSuccessStatusCode();
+			response.disconnect();
+		} catch (IOException e) {
+			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
+					channelId, urlString), e);
+		}
+		
+		return success;
 	}
 	
 	public boolean notifyChannelPlayerComplete(GameItem gameItem, Player player) {
