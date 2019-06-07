@@ -1,5 +1,6 @@
 package io.sengage.webservice.function;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,6 @@ import com.google.gson.Gson;
 import io.sengage.webservice.auth.AuthorizationHelper;
 import io.sengage.webservice.dagger.DaggerExtensionComponent;
 import io.sengage.webservice.dagger.ExtensionComponent;
-import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
@@ -95,11 +95,10 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 	
 	private GetFinalGameResultsResponse buildResponse(Game game, List<? extends Player> playerDatum) {
 		
-		List<? extends EndGameResult> results;
 		GetFinalGameResultsResponse response;
 		switch (game) {
 		case SINGLE_STROKE:
-			results = playerDatum.stream()
+			List<SingleStrokeEndGameResult> results = playerDatum.stream()
 			.map(data -> (SingleStrokePlayer) data)
 			.map(ssPlayerData -> new SingleStrokeEndGameResult(
 					Stroke.builder()
@@ -114,27 +113,27 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 					)
 			)
 			.collect(Collectors.toList());
-			@SuppressWarnings("unchecked")
-			double distanceCovered = calculateDistanceCovered((List<SingleStrokeEndGameResult>) results);
+			double distanceCovered = calculateDistanceCovered(results);
 			response = new SingleStrokeFinalGameResults(results, distanceCovered, playerDatum.size());
 			break;
 		case FLAPPY_BIRD_BR:
-			results = playerDatum.stream()
-			.map(data -> (FlappyBirdPlayer) data)
-			.map(fbPlayerData -> new FlappyBirdEndGameResult(
-					FlightResult.builder()
-					.attempt(fbPlayerData.getAttempt())
-					.character(fbPlayerData.getCharacter())
-					.distance(fbPlayerData.getDistance())
-					.userName(fbPlayerData.getUserName())
-					.opaqueId(fbPlayerData.getOpaqueId())
-					.build()
-					)
-			)
-			.collect(Collectors.toList());
-			
-			// TODO calculate distance covered
-			response = new FlappyBirdFinalGameResults(results, 0, playerDatum.size());
+			int distanceCoveredFB = 0;
+			List<FlappyBirdEndGameResult> fbResults = new ArrayList<FlappyBirdEndGameResult>(playerDatum.size());
+					
+			for (Player playerData: playerDatum) {
+				FlappyBirdPlayer fbPlayerData = (FlappyBirdPlayer) playerData;
+				distanceCoveredFB += fbPlayerData.getDistance();
+				fbResults.add(new FlappyBirdEndGameResult(
+						FlightResult.builder()
+							.attempt(fbPlayerData.getAttempt())
+							.character(fbPlayerData.getCharacter())
+							.distance(fbPlayerData.getDistance())
+							.userName(fbPlayerData.getUserName())
+							.opaqueId(fbPlayerData.getOpaqueId())
+							.build()
+				));
+			}
+			response = new FlappyBirdFinalGameResults(fbResults, distanceCoveredFB, playerDatum.size());
 			break;
 		default:
 			throw new IllegalArgumentException("Not supported: " + game);
