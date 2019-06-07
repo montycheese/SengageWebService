@@ -45,7 +45,7 @@ public class StartGameHandler {
 			return;
 		}
 		
-		int numPlayersJoined = playerDataProvider.getNumberOfPlayersInGame(game.getGameId(), PlayerStatus.WAITING_TO_PLAY);
+		int numPlayersJoined = playerDataProvider.getNumberOfPlayersInGame(game.getGameId(), PlayerStatus.PLAYING);
 		
 		if (numPlayersJoined == 0) {
 			cancelGame(game);
