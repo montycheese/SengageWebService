@@ -7,6 +7,7 @@ import io.sengage.webservice.model.Game;
 import io.sengage.webservice.sengames.handler.EndGameHandler;
 import io.sengage.webservice.sengames.handler.EndGameHandlerFactory;
 import io.sengage.webservice.sengames.handler.StartGameHandler;
+import io.sengage.webservice.sengames.handler.StartGameHandlerFactory;
 import io.sengage.webservice.sf.GameContextInput;
 
 import javax.inject.Inject;
@@ -18,7 +19,7 @@ public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 
 
 	@Inject
-	StartGameHandler startGameHandler;
+	StartGameHandlerFactory startGameHandlerFactory;
 	
 	@Inject
 	EndGameHandlerFactory endGameHandlerFactory;
@@ -41,14 +42,15 @@ public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 		
 		switch (detailType) {
 		case GAME_OUT_OF_TIME:
-			EndGameHandler handler = endGameHandlerFactory.get(game);
-			handler.handleGameTimeout(gameId);
+			EndGameHandler endGameHandler = endGameHandlerFactory.get(game);
+			endGameHandler.handleGameTimeout(gameId);
 			break;
 		case ALL_PLAYERS_FINISHED:
-			handler = endGameHandlerFactory.get(game);
-			handler.handleEndGame(gameId);
+			endGameHandler = endGameHandlerFactory.get(game);
+			endGameHandler.handleEndGame(gameId);
 			break;
 		case WAITING_FOR_PLAYERS_COMPLETE:
+			StartGameHandler startGameHandler = startGameHandlerFactory.get(game);
 			startGameHandler.startGame(gameId);
 			break;
 		default:

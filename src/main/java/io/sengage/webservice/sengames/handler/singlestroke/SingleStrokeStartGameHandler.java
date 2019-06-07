@@ -1,34 +1,29 @@
-package io.sengage.webservice.sengames.handler;
+package io.sengage.webservice.sengames.handler.singlestroke;
 
 import java.util.Optional;
 
-import lombok.Builder;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
-import io.sengage.webservice.model.GameCancellationReason;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.PlayerStatus;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
+import io.sengage.webservice.sengames.handler.StartGameHandler;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
 
-@Builder
-public class StartGameHandler {
-
-	protected final GameDataProvider gameDataProvider;
-	protected final PlayerDataProvider playerDataProvider;
-	protected final TwitchClient twitchClient;
-	protected final StepFunctionTaskExecutor sfExecutor;
+public class SingleStrokeStartGameHandler extends StartGameHandler {
 	
-	public StartGameHandler(GameDataProvider gameDataProvider, PlayerDataProvider playerDataProvider, 
-			TwitchClient twitchClient, StepFunctionTaskExecutor sfExecutor) {
-		this.gameDataProvider = gameDataProvider;
-		this.twitchClient = twitchClient;
-		this.sfExecutor = sfExecutor;
-		this.playerDataProvider = playerDataProvider;
+	private final SingleStrokeEndGameHandler endGameHandler;
+	
+	public SingleStrokeStartGameHandler(GameDataProvider gameDataProvider,
+			PlayerDataProvider playerDataProvider, TwitchClient twitchClient,
+			StepFunctionTaskExecutor sfExecutor, SingleStrokeEndGameHandler endGameHandler) {
+		super(gameDataProvider, playerDataProvider, twitchClient, sfExecutor);
+		this.endGameHandler = endGameHandler;
 	}
 	
+	@Override
 	public void startGame(String gameId) {
 		Optional<GameItem> optionalGame = gameDataProvider.getGame(gameId);
 		
@@ -47,7 +42,18 @@ public class StartGameHandler {
 		int numPlayersJoined = playerDataProvider.getNumberOfPlayersInGame(game.getGameId(), PlayerStatus.PLAYING);
 		
 		if (numPlayersJoined == 0) {
-			cancelGame(game);
+			// For SS, players can start sending requests during the Join Game Phase. 
+			// If the Game starts and all the players who requested to join the game are already completed, 
+			// Then just end the game early so that the final results are shown and people aren't stuck waiting.
+			int numPlayersCompleted = playerDataProvider.getNumberOfPlayersInGame(game.getGameId(), PlayerStatus.COMPLETED);
+			if (numPlayersCompleted > 0) {
+				game.setGameStatus(GameStatus.COMPLETED);
+				game.setStatusReason("Game completed early during the join game phase.");
+				endGameHandler.handleEndGame(game);
+			} else {
+				cancelGame(game);
+			}
+			return;
 		} else {
 			game.setGameStatus(GameStatus.IN_PROGRESS);
 			
@@ -64,16 +70,5 @@ public class StartGameHandler {
 			twitchClient.notifyChannelGameStarted(game);
 		}
 	}
-	
-	protected void cancelGame(GameItem game) {
-		game.setGameStatus(GameStatus.CANCELLED);
-		game.setStatusReason(GameCancellationReason.NO_PLAYERS.name());
-		try {
-			gameDataProvider.updateGame(game);
-		} catch (ItemVersionMismatchException e) {
-			e.printStackTrace();
-			return;
-		}
-		twitchClient.notifyChannelGameCancelled(game, GameCancellationReason.NO_PLAYERS);
-	}
+
 }
