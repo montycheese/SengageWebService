@@ -10,6 +10,7 @@ import io.sengage.webservice.model.GameItem.GameItemDigest;
 import io.sengage.webservice.sengames.handler.EndGameHandler;
 import io.sengage.webservice.sengames.handler.EndGameHandlerFactory;
 import io.sengage.webservice.sengames.handler.StartGameHandler;
+import io.sengage.webservice.sengames.handler.StartGameHandlerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
@@ -19,7 +20,7 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 
 
 	@Inject
-	StartGameHandler startGameHandler;
+	StartGameHandlerFactory startGameHandlerFactory;
 	
 	@Inject
 	EndGameHandlerFactory endGameHandlerFactory;
@@ -50,6 +51,7 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 			handler.handleEndGame(gameId);
 			break;
 		case WAITING_FOR_PLAYERS_COMPLETE:
+			StartGameHandler startGameHandler = startGameHandlerFactory.get(game);
 			startGameHandler.startGame(gameId);
 			break;
 		default:

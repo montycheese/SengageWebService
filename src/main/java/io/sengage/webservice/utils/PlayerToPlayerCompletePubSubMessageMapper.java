@@ -18,6 +18,8 @@ public class PlayerToPlayerCompletePubSubMessageMapper {
 					.game(gameItem.getGame())
 					.gameId(gameItem.getGameId())
 					.gameStatus(gameItem.getGameStatus())
+					.opaqueId(fbPlayer.getOpaqueId())
+					.userName(player.getUserName())
 					.build();
 		case SINGLE_STROKE:
 		default:

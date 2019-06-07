@@ -20,6 +20,11 @@ public final class GameItemToEndgamePubSubMessageMapper {
 						gameItem.getGameStatus(),
 						params.getImage());
 			case FLAPPY_BIRD_BR:
+				return EndGameMessage.builder()
+						.game(gameItem.getGame())
+						.gameId(gameItem.getGameId())
+						.gameStatus(gameItem.getGameStatus())
+						.build();
 			default:
 				throw new IllegalArgumentException("Unsupported game: " + gameItem.getGame());
 		}
