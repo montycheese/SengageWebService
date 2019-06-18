@@ -75,5 +75,7 @@ public class StartGameHandler {
 			return;
 		}
 		twitchClient.notifyChannelGameCancelled(game, GameCancellationReason.NO_PLAYERS);
+		
+		sfExecutor.cleanUpGameStateMachineResources(game);
 	}
 }

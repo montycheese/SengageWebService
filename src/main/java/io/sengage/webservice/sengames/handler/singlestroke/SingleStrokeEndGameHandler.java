@@ -34,6 +34,7 @@ public class SingleStrokeEndGameHandler extends EndGameHandler {
 				throw new RuntimeException(e);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			gameItem.setGameStatus(GameStatus.ERROR_STATE);
 			try {
 				gameDataProvider.updateGame(gameItem);	
