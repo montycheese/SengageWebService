@@ -23,42 +23,6 @@ Globals:
           Fn::GetAtt:
           - StatesExecutionRole
           - Arn
-Outputs:
-  ConnectionsTableArn:
-    Description: Connections table ARN
-    Value:
-      Fn::GetAtt:
-      - ConnectionsTable
-      - Arn
-  OnConnectFunctionArn:
-    Description: OnConnect function ARN
-    Value:
-      Fn::GetAtt:
-      - OnConnectFunction
-      - Arn
-  OnDisconnectFunctionArn:
-    Description: OnDisconnect function ARN
-    Value:
-      Fn::GetAtt:
-      - OnDisconnectFunction
-      - Arn
-  SendMessageFunctionArn:
-    Description: SendMessage function ARN
-    Value:
-      Fn::GetAtt:
-      - SendMessageFunction
-      - Arn
-  WebSocketURI:
-    Description: The WSS Protocol URI to connect to
-    Value:
-      Fn::Join:
-      - ''
-      - - wss://
-        - Ref: SengageWebSocket
-        - .execute-api.
-        - Ref: AWS::Region
-        - .amazonaws.com/
-        - Ref: Stage
 Parameters:
   DeploymentStage:
     Description: (Required) The Development stage we are deploying to. (one of Beta,
@@ -101,45 +65,6 @@ Resources:
           Version: '2012-10-17'
         PolicyName: ApiGatewayLambdaInvokePermission
     Type: AWS::IAM::Role
-  ConnectInteg:
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-      Description: Connect Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
-    Type: AWS::ApiGatewayV2::Integration
-  ConnectRoute:
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-      AuthorizationType: CUSTOM
-      AuthorizerId:
-        Ref: LambdaAuthorizer
-      OperationName: ConnectRoute
-      RouteKey: $connect
-      Target:
-        Fn::Join:
-        - /
-        - - integrations
-          - Ref: ConnectInteg
-    Type: AWS::ApiGatewayV2::Route
-  ConnectionsTable:
-    Properties:
-      AttributeDefinitions:
-      - AttributeName: connectionId
-        AttributeType: S
-      KeySchema:
-      - AttributeName: connectionId
-        KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      SSESpecification:
-        SSEEnabled: false
-      TableName: Connections
-    Type: AWS::DynamoDB::Table
   DefaultLambdaInvocationRole:
     Properties:
       AssumeRolePolicyDocument:
@@ -169,37 +94,6 @@ Resources:
           Version: '2012-10-17'
         PolicyName: LambdaInvocationRolePolicy
     Type: AWS::IAM::Role
-  Deployment:
-    DependsOn:
-    - ConnectRoute
-    - SendRoute
-    - DisconnectRoute
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-    Type: AWS::ApiGatewayV2::Deployment
-  DisconnectInteg:
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-      Description: Disconnect Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
-    Type: AWS::ApiGatewayV2::Integration
-  DisconnectRoute:
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-      AuthorizationType: NONE
-      OperationName: DisconnectRoute
-      RouteKey: $disconnect
-      Target:
-        Fn::Join:
-        - /
-        - - integrations
-          - Ref: DisconnectInteg
-    Type: AWS::ApiGatewayV2::Route
   GameTable:
     Properties:
       AttributeDefinitions:
@@ -213,86 +107,6 @@ Resources:
         WriteCapacityUnits: '1'
       TableName: Game
     Type: AWS::DynamoDB::Table
-  LambdaAuthorizer:
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-      AuthorizerType: REQUEST
-      AuthorizerUri:
-        Fn::Join:
-        - ''
-        - - 'arn:aws:apigateway:'
-          - Ref: AWS::Region
-          - :lambda:path/2015-03-31/functions/
-          - Fn::GetAtt:
-            - LambdaAuthorizerFunction
-            - Arn
-          - /invocations
-      IdentitySource:
-      - route.request.querystring.Auth
-      Name: SengageWSApiAuthorizer
-    Type: AWS::ApiGatewayV2::Authorizer
-  LambdaAuthorizerFunction:
-    Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/0973c2d80dfffc592aa93c227cfaffc6
-      Handler: io.sengage.webservice.function.LambdaAuthorizer
-      MemorySize: 256
-      Policies:
-      - AWSLambdaFullAccess
-      - CloudWatchLogsFullAccess
-      Runtime: java8
-      Timeout: 30
-    Type: AWS::Serverless::Function
-  LambdaAuthorizerFunctionPermission:
-    DependsOn:
-    - SengageWebSocket
-    - LambdaAuthorizerFunction
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName:
-        Ref: LambdaAuthorizerFunction
-      Principal: apigateway.amazonaws.com
-    Type: AWS::Lambda::Permission
-  OnConnectFunction:
-    Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/0973c2d80dfffc592aa93c227cfaffc6
-      Handler: io.sengage.webservice.function.OnConnect
-      MemorySize: 256
-      Policies:
-      - DynamoDBCrudPolicy:
-          TableName: Connections
-      Runtime: java8
-    Type: AWS::Serverless::Function
-  OnConnectPermission:
-    DependsOn:
-    - SengageWebSocket
-    - OnConnectFunction
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName:
-        Ref: OnConnectFunction
-      Principal: apigateway.amazonaws.com
-    Type: AWS::Lambda::Permission
-  OnDisconnectFunction:
-    Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/0973c2d80dfffc592aa93c227cfaffc6
-      Handler: io.sengage.webservice.function.OnDisconnect
-      MemorySize: 256
-      Policies:
-      - DynamoDBCrudPolicy:
-          TableName: Connections
-      Runtime: java8
-    Type: AWS::Serverless::Function
-  OnDisconnectPermission:
-    DependsOn:
-    - SengageWebSocket
-    - OnDisconnectFunction
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName:
-        Ref: OnDisconnectFunction
-      Principal: apigateway.amazonaws.com
-    Type: AWS::Lambda::Permission
   PermissionForSengamesAllPlayersFinishedEventToInvokeLambda:
     Properties:
       Action: lambda:InvokeFunction
@@ -332,58 +146,10 @@ Resources:
         WriteCapacityUnits: '1'
       TableName: Player
     Type: AWS::DynamoDB::Table
-  SendInteg:
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-      Description: Send Integration
-      IntegrationType: AWS_PROXY
-      IntegrationUri:
-        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendMessageFunction.Arn}/invocations
-    Type: AWS::ApiGatewayV2::Integration
-  SendMessageFunction:
-    Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/0973c2d80dfffc592aa93c227cfaffc6
-      Handler: io.sengage.webservice.function.SendMessage
-      MemorySize: 256
-      Policies:
-      - DynamoDBCrudPolicy:
-          TableName: Connections
-      - Statement:
-        - Action:
-          - execute-api:ManageConnections
-          Effect: Allow
-          Resource:
-          - Fn::Sub: arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SengageWebSocket}/*
-      Runtime: java8
-      Timeout: 30
-    Type: AWS::Serverless::Function
-  SendMessagePermission:
-    DependsOn:
-    - SengageWebSocket
-    - SendMessageFunction
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName:
-        Ref: SendMessageFunction
-      Principal: apigateway.amazonaws.com
-    Type: AWS::Lambda::Permission
-  SendRoute:
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-      OperationName: SendRoute
-      RouteKey: sendMessage
-      Target:
-        Fn::Join:
-        - /
-        - - integrations
-          - Ref: SendInteg
-    Type: AWS::ApiGatewayV2::Route
   SengageWSLambdaFunction:
     DependsOn: SengamesGameTaskHandlerLambdaFunction
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/0973c2d80dfffc592aa93c227cfaffc6
+      CodeUri: s3://deployment-us-east-1-lambdas-1/b627ac0ce57ef441db37b84dd47de7e8
       FunctionName: SengageWSLambdaFunction
       Handler: io.sengage.webservice.function.RequestHandler
       MemorySize: 320
@@ -402,15 +168,9 @@ Resources:
         Ref: DeploymentStage
       TracingEnabled: false
     Type: AWS::Serverless::Api
-  SengageWebSocket:
-    Properties:
-      Name: SengageWSWebService
-      ProtocolType: WEBSOCKET
-      RouteSelectionExpression: $request.body.message
-    Type: AWS::ApiGatewayV2::Api
   SengamesCWEventHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/0973c2d80dfffc592aa93c227cfaffc6
+      CodeUri: s3://deployment-us-east-1-lambdas-1/b627ac0ce57ef441db37b84dd47de7e8
       FunctionName: SengamesCWEventHandlerLambdaFunction
       Handler: io.sengage.webservice.events.CWEventsHandler
       MemorySize: 320
@@ -423,7 +183,7 @@ Resources:
     Type: AWS::Serverless::Function
   SengamesGameTaskHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/0973c2d80dfffc592aa93c227cfaffc6
+      CodeUri: s3://deployment-us-east-1-lambdas-1/b627ac0ce57ef441db37b84dd47de7e8
       FunctionName: SengamesGameTaskHandlerLambdaFunction
       Handler: io.sengage.webservice.function.GameTaskHandler
       MemorySize: 320
@@ -434,16 +194,6 @@ Resources:
       Runtime: java8
       Timeout: 120
     Type: AWS::Serverless::Function
-  Stage:
-    Properties:
-      ApiId:
-        Ref: SengageWebSocket
-      DeploymentId:
-        Ref: Deployment
-      Description: Stage
-      StageName:
-        Ref: DeploymentStage
-    Type: AWS::ApiGatewayV2::Stage
   StatesExecutionRole:
     Properties:
       AssumeRolePolicyDocument:
