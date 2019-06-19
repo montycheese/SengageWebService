@@ -21,6 +21,8 @@ Parameters:
   DeploymentStage:
     Type: String
     Description: (Required) The Development stage we are deploying to. (one of Beta, Prod)
+Conditions:
+  CreateTable: !Equals [!Ref DeploymentStage, "Beta"]
 
 Resources:
 # Http API LAMBDAS
@@ -177,6 +179,7 @@ Resources:
           
   # DB
   GameTable:
+    Condition: CreateTable 
     Type: 'AWS::DynamoDB::Table'
     Properties:
       AttributeDefinitions:
@@ -191,6 +194,7 @@ Resources:
       TableName: Game
       
   PlayerTable:
+    Condition: CreateTable
     Type: 'AWS::DynamoDB::Table'
     Properties:
       AttributeDefinitions:

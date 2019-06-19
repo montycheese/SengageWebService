@@ -1,4 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Conditions:
+  CreateTable:
+    Fn::Equals:
+    - Ref: DeploymentStage
+    - Beta
 Description: 'Sengage WebService
 
   SAM Template for Sengage WebService that has the DynamoDB table and Lambda functions
@@ -104,6 +109,7 @@ Resources:
         PolicyName: LambdaInvocationRolePolicy
     Type: AWS::IAM::Role
   GameTable:
+    Condition: CreateTable
     Properties:
       AttributeDefinitions:
       - AttributeName: GameId
@@ -128,6 +134,7 @@ Resources:
         - Arn
     Type: AWS::Lambda::Permission
   PlayerTable:
+    Condition: CreateTable
     Properties:
       AttributeDefinitions:
       - AttributeName: GameId
