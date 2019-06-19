@@ -18,7 +18,11 @@ Globals:
           - - arn:aws:lambda
             - Ref: AWS::Region
             - Ref: AWS::AccountId
-            - function:SengamesGameTaskHandlerLambdaFunction
+            - function
+            - Fn::Join:
+              - '-'
+              - - Ref: DeploymentStage
+                - SengamesGameTaskHandlerLambdaFunction
         StateMachineExecutionRoleArn:
           Fn::GetAtt:
           - StatesExecutionRole
@@ -35,7 +39,12 @@ Resources:
       EventPattern:
         detail-type:
         - ALL_PLAYERS_FINISHED
-      Name: AllPlayersFinishedRule
+      Name:
+        Fn::Join:
+        - ''
+        - - Ref: DeploymentStage
+          - ''
+          - AllPlayersFinishedRule
       State: ENABLED
       Targets:
       - Arn:
@@ -149,8 +158,13 @@ Resources:
   SengageWSLambdaFunction:
     DependsOn: SengamesGameTaskHandlerLambdaFunction
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/b627ac0ce57ef441db37b84dd47de7e8
-      FunctionName: SengageWSLambdaFunction
+      CodeUri: s3://deployment-us-east-1-lambdas-1/fcecefa82fe3e1a3c9ec6d0154464ab4
+      FunctionName:
+        Fn::Join:
+        - ''
+        - - Ref: DeploymentStage
+          - '-'
+          - SengageWSLambdaFunction
       Handler: io.sengage.webservice.function.RequestHandler
       MemorySize: 320
       Role:
@@ -162,16 +176,24 @@ Resources:
     Type: AWS::Serverless::Function
   SengageWSWebService:
     Properties:
-      DefinitionUri: s3://deployment-us-east-1-lambdas-1/11d9b56659eba222ae0a735673f3d6b9
+      DefinitionUri: s3://deployment-us-east-1-lambdas-1/6b1a5c469f7d8f3143089468613c14d3
       EndpointConfiguration: REGIONAL
       StageName:
         Ref: DeploymentStage
       TracingEnabled: false
+      Variables:
+        Stage:
+          Ref: DeploymentStage
     Type: AWS::Serverless::Api
   SengamesCWEventHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/b627ac0ce57ef441db37b84dd47de7e8
-      FunctionName: SengamesCWEventHandlerLambdaFunction
+      CodeUri: s3://deployment-us-east-1-lambdas-1/fcecefa82fe3e1a3c9ec6d0154464ab4
+      FunctionName:
+        Fn::Join:
+        - ''
+        - - Ref: DeploymentStage
+          - '-'
+          - SengamesCWEventHandlerLambdaFunction
       Handler: io.sengage.webservice.events.CWEventsHandler
       MemorySize: 320
       Role:
@@ -183,8 +205,13 @@ Resources:
     Type: AWS::Serverless::Function
   SengamesGameTaskHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/b627ac0ce57ef441db37b84dd47de7e8
-      FunctionName: SengamesGameTaskHandlerLambdaFunction
+      CodeUri: s3://deployment-us-east-1-lambdas-1/fcecefa82fe3e1a3c9ec6d0154464ab4
+      FunctionName:
+        Fn::Join:
+        - ''
+        - - Ref: DeploymentStage
+          - '-'
+          - SengamesGameTaskHandlerLambdaFunction
       Handler: io.sengage.webservice.function.GameTaskHandler
       MemorySize: 320
       Role:

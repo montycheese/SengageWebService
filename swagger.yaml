@@ -17,7 +17,7 @@ paths:
           default:
             statusCode: '200'
         uri: >-
-          arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:859597192772:function:SengageWSLambdaFunction/invocations
+          arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:859597192772:function:${stageVariables.Stage}-SengageWSLambdaFunction/invocations
         passthroughBehavior: when_no_match
         httpMethod: POST
         credentials: arn:aws:iam::859597192772:role/sengage-webservice-ApiGatewayLambdaInvokePermissio-EOS8J586RPXN
