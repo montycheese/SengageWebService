@@ -124,6 +124,7 @@ Resources:
   ApiGatewayLambdaInvokePermission:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Join ["-", [!Ref DeploymentStage, "ApiGatewayLambdaInvokePermission"]]
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -222,3 +223,8 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+Outputs:
+  ApiGatewayLambdaInvokePermission:
+    Description: Arn of the APIG lambda invoke permission
+    Value: !GetAtt ApiGatewayLambdaInvokePermission.Arn
+  
