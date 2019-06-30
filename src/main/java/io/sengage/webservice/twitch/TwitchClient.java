@@ -5,7 +5,6 @@ import io.sengage.webservice.auth.TwitchJWTField;
 import io.sengage.webservice.dagger.ExtensionModule;
 import io.sengage.webservice.model.GameCancellationReason;
 import io.sengage.webservice.model.GameItem;
-import io.sengage.webservice.model.Player;
 import io.sengage.webservice.sengames.model.pubsub.CancelGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.JoinGameMessage;
@@ -202,14 +201,14 @@ public final class TwitchClient {
 		return success;
 	}
 	
-	public boolean notifyChannelPlayerComplete(GameItem gameItem, Player player) {
+	public boolean notifyChannelPlayerComplete(PlayerCompleteRequest playerCompleteRequest) {
 		boolean success = false;
-		String channelId = gameItem.getChannelId();
+		String channelId = playerCompleteRequest.getChannelId();
 		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);		
 		GenericUrl url = new GenericUrl(urlString);
 
 		
-		PubSubGameMessage message = PlayerToPlayerCompletePubSubMessageMapper.get(gameItem, player);
+		PubSubGameMessage message = PlayerToPlayerCompletePubSubMessageMapper.get(playerCompleteRequest);
 		
 		HttpContent content = new JsonHttpContent(jsonFactory, 
 				PubSubMessage.builder()

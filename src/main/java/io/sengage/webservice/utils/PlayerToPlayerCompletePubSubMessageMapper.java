@@ -1,29 +1,33 @@
 package io.sengage.webservice.utils;
 
 import io.sengage.webservice.model.GameItem;
-import io.sengage.webservice.model.Player;
 import io.sengage.webservice.model.flappybird.FlappyBirdPlayer;
 import io.sengage.webservice.sengames.model.pubsub.FlappyBirdPlayerCompletePubSubMessage;
 import io.sengage.webservice.sengames.model.pubsub.PubSubGameMessage;
+import io.sengage.webservice.twitch.FlappyBirdPlayerCompleteRequest;
+import io.sengage.webservice.twitch.PlayerCompleteRequest;
 
 public class PlayerToPlayerCompletePubSubMessageMapper {
 	
-	public static PubSubGameMessage get(GameItem gameItem, Player player) {
+	public static PubSubGameMessage get(PlayerCompleteRequest request) {
 		
-		switch (gameItem.getGame()) {
+		switch (request.getGame()) {
 		case FLAPPY_BIRD_BR:
-			FlappyBirdPlayer fbPlayer = (FlappyBirdPlayer) player;
+			FlappyBirdPlayerCompleteRequest fbRequest = (FlappyBirdPlayerCompleteRequest) request;
+			FlappyBirdPlayer fbPlayer = fbRequest.getPlayer();
+			GameItem gameItem = fbRequest.getGameItem();
 			return FlappyBirdPlayerCompletePubSubMessage.builder()
 					.character(fbPlayer.getCharacter())
 					.game(gameItem.getGame())
 					.gameId(gameItem.getGameId())
 					.gameStatus(gameItem.getGameStatus())
 					.opaqueId(fbPlayer.getOpaqueId())
-					.userName(player.getUserName())
+					.userName(fbPlayer.getUserName())
+					.playersRemaining(fbRequest.getPlayersRemaining())
 					.build();
 		case SINGLE_STROKE:
 		default:
-			throw new IllegalArgumentException("Unsupported type: " + gameItem.getGame());
+			throw new IllegalArgumentException("Unsupported type: " + request.getGame());
 		}
 	}
 }

@@ -32,6 +32,13 @@ Globals:
           Fn::GetAtt:
           - StatesExecutionRole
           - Arn
+Outputs:
+  ApiGatewayLambdaInvokePermission:
+    Description: Arn of the APIG lambda invoke permission
+    Value:
+      Fn::GetAtt:
+      - ApiGatewayLambdaInvokePermission
+      - Arn
 Parameters:
   DeploymentStage:
     Description: (Required) The Development stage we are deploying to. (one of Beta,
@@ -78,6 +85,11 @@ Resources:
             Resource: '*'
           Version: '2012-10-17'
         PolicyName: ApiGatewayLambdaInvokePermission
+      RoleName:
+        Fn::Join:
+        - '-'
+        - - Ref: DeploymentStage
+          - ApiGatewayLambdaInvokePermission
     Type: AWS::IAM::Role
   DefaultLambdaInvocationRole:
     Properties:
@@ -165,7 +177,7 @@ Resources:
   SengageWSLambdaFunction:
     DependsOn: SengamesGameTaskHandlerLambdaFunction
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/dd1a53ce5e6eeeede48895d4617fce6b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/0a81c54be3ccbc29d3f8c4d514c77d6a
       FunctionName:
         Fn::Join:
         - ''
@@ -183,7 +195,7 @@ Resources:
     Type: AWS::Serverless::Function
   SengageWSWebService:
     Properties:
-      DefinitionUri: s3://deployment-us-east-1-lambdas-1/6b1a5c469f7d8f3143089468613c14d3
+      DefinitionUri: s3://deployment-us-east-1-lambdas-1/9f9e5f3772070116aeedad58b1c37a33
       EndpointConfiguration: REGIONAL
       StageName:
         Ref: DeploymentStage
@@ -194,7 +206,7 @@ Resources:
     Type: AWS::Serverless::Api
   SengamesCWEventHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/dd1a53ce5e6eeeede48895d4617fce6b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/0a81c54be3ccbc29d3f8c4d514c77d6a
       FunctionName:
         Fn::Join:
         - ''
@@ -212,7 +224,7 @@ Resources:
     Type: AWS::Serverless::Function
   SengamesGameTaskHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/dd1a53ce5e6eeeede48895d4617fce6b
+      CodeUri: s3://deployment-us-east-1-lambdas-1/0a81c54be3ccbc29d3f8c4d514c77d6a
       FunctionName:
         Fn::Join:
         - ''

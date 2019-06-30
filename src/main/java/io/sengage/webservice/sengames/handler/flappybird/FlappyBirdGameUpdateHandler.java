@@ -20,6 +20,8 @@ import io.sengage.webservice.sengames.handler.GameUpdateHandler;
 import io.sengage.webservice.sengames.model.HandleGameUpdateResponse;
 import io.sengage.webservice.sengames.model.flappybird.FlappyBirdGameUpdateResponse;
 import io.sengage.webservice.sengames.model.flappybird.SendFlightResultRequest;
+import io.sengage.webservice.twitch.FlappyBirdPlayerCompleteRequest;
+import io.sengage.webservice.twitch.PlayerCompleteRequest;
 import io.sengage.webservice.twitch.TwitchClient;
 
 public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
@@ -95,7 +97,13 @@ public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 			System.out.println("All players are finished, creating CWE event.");
 			notifyAllPlayersAreFinished(game);
 		} else {
-			twitchClient.notifyChannelPlayerComplete(game, player);
+			PlayerCompleteRequest playerCompleteRequest = FlappyBirdPlayerCompleteRequest.builder()
+					.gameItem(game)
+					.player((FlappyBirdPlayer) player)
+					.playersRemaining(playersRemaining)
+					.channelId(game.getChannelId())
+					.build();					
+			twitchClient.notifyChannelPlayerComplete(playerCompleteRequest);
 		}
 		return new FlappyBirdGameUpdateResponse();
 	}
