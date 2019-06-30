@@ -9,6 +9,8 @@ import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
+import io.sengage.webservice.utils.Constants;
+import io.sengage.webservice.utils.GameToWaitForPlayersToJoinDurationMapper;
 
 public class CreateGameHandlerImpl extends CreateGameHandler {
 	
@@ -41,8 +43,23 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 		try {
 			twitchClient.notifyChannelJoinGame(item);	
 		} catch (Exception e) {
-			// have a event or error path that gracesfully fails a game if it encounters error state
+			item.setGameStatus(GameStatus.ERROR_STATE);
+			item.setStatusReason("Failed to notify players of game start due to: " + e.getMessage());
+			try {
+				gameDataProvider.updateGame(item);
+			} catch (ItemVersionMismatchException e1) {
+				e1.printStackTrace();
+			}
 			throw e;
+		}
+		
+		try {
+			int waitDuration = GameToWaitForPlayersToJoinDurationMapper.get(game);
+			String message = String.format(Constants.GAME_START_MESSAGE_FORMAT, item.getGame().getFriendlyName(), waitDuration);
+			twitchClient.sendExtensionChatMessage(item.getChannelId(), message);
+		} catch (Exception e) {
+			e.printStackTrace();
+			// OK to swallow this.
 		}
 		
 		
@@ -52,7 +69,7 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 			gameDataProvider.updateGame(item);
 		} catch (ItemVersionMismatchException e) {
 			System.out.println("Item version mismatch while trying to update game: " + item.getGameId());
-			// have a event or error path that gracesfully fails a game if it encounters error state
+			// have a event or error path that gracefully fails a game if it encounters error state
 			item = gameDataProvider.getGame(item.getGameId()).get();
 			item.setGameStatus(GameStatus.ERROR_STATE);
 			throw new RuntimeException("Item version mismatch while trying to update game, moving game to error state", e);
