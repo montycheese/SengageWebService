@@ -14,6 +14,7 @@ import com.amazonaws.services.stepfunctions.model.CreateStateMachineRequest;
 import com.amazonaws.services.stepfunctions.model.CreateStateMachineResult;
 import com.amazonaws.services.stepfunctions.model.DeleteStateMachineRequest;
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest;
+import com.amazonaws.services.stepfunctions.model.StartExecutionResult;
 import com.google.gson.Gson;
 
 import io.sengage.webservice.dagger.StateMachineModule;
@@ -48,7 +49,9 @@ public class StepFunctionTaskExecutor {
 		startExecutionRequest.withName("StartGame-" + gameItem.getGameId())
 		.withStateMachineArn(stateMachineArn);
 		
-		sfClient.startExecutionAsync(startExecutionRequest);
+		StartExecutionResult response = sfClient.startExecution(startExecutionRequest);
+		
+		System.out.println("StepFunctionTaskExecutor#executeStartGameStateMachine(): Started Execution " + response.getExecutionArn());
 		
 		return stateMachineArn;
 	}
