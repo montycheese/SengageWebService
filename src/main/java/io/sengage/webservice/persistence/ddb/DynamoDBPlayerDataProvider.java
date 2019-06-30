@@ -96,23 +96,45 @@ public class DynamoDBPlayerDataProvider implements PlayerDataProvider {
 		eav.put(val, new AttributeValue().withS(gameId));
 		eav.put(val2, new AttributeValue().withS(status.name()));
 		
-		return listPlayers(keyConditionalExpression, eav, clazz);
+		return listPlayers(keyConditionalExpression, null, eav, clazz, Player.GAME_ID_PLAYER_STATUS_INDEX, true);
 	}
 	
+	@Override
+	public List<? extends Player> listPlayersByScore(String gameId, Class<? extends Player> clazz) {
+		String val = ":val1";
+		String val2 = ":val2";
+		String keyConditionalExpression = String.format("%s = %s", Player.GAME_ID_ATTR_NAME, val);
+		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+		eav.put(val, new AttributeValue().withS(gameId));
+		eav.put(val2, new AttributeValue().withS(PlayerStatus.COMPLETED.name()));
+		
+		String filterExpression = String.format("%s = %s", Player.PLAYER_STATUS_ATTR_NAME, val2);
+		
+		return listPlayers(keyConditionalExpression, filterExpression, eav, clazz, Player.GAME_ID_SCORE_INDEX, false);
+	}
+	
+	// TODO paginate.
 	private List<? extends Player> listPlayers(String keyConditionalExpression,
+			String filterExpression,
 			Map<String, AttributeValue> eav,
-			Class<? extends Player> clazz) {
+			Class<? extends Player> clazz,
+			String indexName,
+			boolean scanIndexForward) {
 		if (clazz.equals(SingleStrokePlayer.class)) {
 			DynamoDBQueryExpression<SingleStrokePlayer> q = new DynamoDBQueryExpression<SingleStrokePlayer>()				
-					.withIndexName(Player.GAME_ID_PLAYER_STATUS_INDEX)
+					.withIndexName(indexName)
+					.withFilterExpression(filterExpression)
 					.withKeyConditionExpression(keyConditionalExpression)
-					.withExpressionAttributeValues(eav);
+					.withExpressionAttributeValues(eav)
+					.withScanIndexForward(scanIndexForward);
 			return mapper.query(SingleStrokePlayer.class, q);
 		} else if (clazz.equals(FlappyBirdPlayer.class)) {
 			DynamoDBQueryExpression<FlappyBirdPlayer> q = new DynamoDBQueryExpression<FlappyBirdPlayer>()				
-					.withIndexName(Player.GAME_ID_PLAYER_STATUS_INDEX)
+					.withIndexName(indexName)
+					.withFilterExpression(filterExpression)
 					.withKeyConditionExpression(keyConditionalExpression)
-					.withExpressionAttributeValues(eav);
+					.withExpressionAttributeValues(eav)
+					.withScanIndexForward(scanIndexForward);
 			return mapper.query(FlappyBirdPlayer.class, q);
 		}
 		

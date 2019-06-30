@@ -205,6 +205,8 @@ Resources:
           AttributeType: S
         - AttributeName: PlayerStatus
           AttributeType: S
+        - AttributeName: Score
+          AttributeType: N
       KeySchema:
         - AttributeName: GameId
           KeyType: HASH
@@ -220,6 +222,14 @@ Resources:
             - AttributeName: GameId
               KeyType: HASH
             - AttributeName: PlayerStatus
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: "GameId-Score-Index"
+          KeySchema:
+            - AttributeName: GameId
+              KeyType: HASH
+            - AttributeName: Score
               KeyType: RANGE
           Projection:
             ProjectionType: ALL

@@ -27,6 +27,8 @@ public class Player {
 	public static final String OPAQUE_ID_ATTR_NAME = "OpaqueId";
 	public static final String PLAYER_STATUS_ATTR_NAME = "PlayerStatus";
 	public static final String GAME_ID_PLAYER_STATUS_INDEX = GAME_ID_ATTR_NAME + "-" + PLAYER_STATUS_ATTR_NAME + "-" + "Index";
+	public static final String SCORE_ATTR_NAME = "Score"; // use this attribute for all games that are ranked
+	public static final String GAME_ID_SCORE_INDEX = GAME_ID_ATTR_NAME + "-" + SCORE_ATTR_NAME + "-" + "Index";
 	
 	@DynamoDBHashKey(attributeName = GAME_ID_ATTR_NAME)
 	private String gameId;
@@ -41,4 +43,6 @@ public class Player {
 	@DynamoDBIndexRangeKey(attributeName = PLAYER_STATUS_ATTR_NAME, localSecondaryIndexName = GAME_ID_PLAYER_STATUS_INDEX)
 	@DynamoDBTypeConvertedEnum
 	private PlayerStatus playerStatus;
+	@DynamoDBIndexRangeKey(attributeName = SCORE_ATTR_NAME, localSecondaryIndexName = GAME_ID_SCORE_INDEX)
+	private long score;
 }

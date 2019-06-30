@@ -40,7 +40,7 @@ public class SingleStrokePlayer extends Player {
 			double width,
 			String colorHex
 			) {
-		super(gameId, opaqueId, userId, userName, joinedAt, modifiedAt, playerStatus);
+		super(gameId, opaqueId, userId, userName, joinedAt, modifiedAt, playerStatus, 0);
 		this.strokeType = strokeType;
 		this.pointA = pointA;
 		this.pointB = pointB;

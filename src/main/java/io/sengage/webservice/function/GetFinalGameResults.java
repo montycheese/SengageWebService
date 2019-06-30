@@ -20,7 +20,6 @@ import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.GetFinalGameResultsResponse;
 import io.sengage.webservice.model.Player;
-import io.sengage.webservice.model.PlayerStatus;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
 import io.sengage.webservice.model.flappybird.FlappyBirdEndGameResult;
@@ -76,13 +75,9 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 			throw new IllegalStateException("Game is not yet complete: " + gameId);
 		}
 		
-		//todo ensure player belongs to game.
+		//TODO: ensure player belongs to game.
 		
-		List<? extends Player> playerDatum = playerDataProvider
-				.listPlayers(gameId, 
-						PlayerStatus.COMPLETED,
-						GameToPlayerClassMapper.get(gameItem.getGame()));
-		
+		List<? extends Player> playerDatum = playerDataProvider.listPlayersByScore(gameId, GameToPlayerClassMapper.get(gameItem.getGame()));
 		
 		GetFinalGameResultsResponse response = buildResponse(gameItem.getGame(), playerDatum);
 
