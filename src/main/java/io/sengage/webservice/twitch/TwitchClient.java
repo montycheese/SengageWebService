@@ -66,108 +66,30 @@ public final class TwitchClient {
 	}
 	
 	public boolean notifyChannelJoinGame(GameItem gameItem) {
+		String urlString = getSendExtensionPubSubMessageUrl(gameItem.getChannelId());
 		
-		boolean success = false;
-		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, gameItem.getChannelId());		
-		GenericUrl url = new GenericUrl(urlString);
-
 		JoinGameMessage message = GameItemToJoinGamePubSubMessageMapper.get(gameItem);
 		
-		HttpContent content = new JsonHttpContent(jsonFactory, 
-				PubSubMessage.builder()
-				.contentType(PubSubMessage.JSON)
-				.targets(Arrays.asList("broadcast"))
-				.message(gson.toJson(message))
-				.build());
-		
-		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(gameItem.getChannelId()));
-
-		try {
-			HttpRequest request = requestFactory.buildPostRequest(url, content);
-			initHttpHeaders(request, authToken);
-			
-			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
-			HttpResponse response =  request.execute();
-			success = response.isSuccessStatusCode();
-			response.disconnect();
-		} catch (IOException e) {
-			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
-					gameItem.getChannelId(), urlString), e);
-		}
-		return success;
+		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
 	}
 	
 	public boolean notifyChannelGameStarted(GameItem gameItem) {
-		
-		boolean success = false;
-		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, gameItem.getChannelId());		
-		GenericUrl url = new GenericUrl(urlString);
+		String urlString = getSendExtensionPubSubMessageUrl(gameItem.getChannelId());
 
 		StartGameMessage message = GameItemToStartGamePubSubMessageMapper.get(gameItem);
-		
-		HttpContent content = new JsonHttpContent(jsonFactory, 
-				PubSubMessage.builder()
-				.contentType(PubSubMessage.JSON)
-				.targets(Arrays.asList("broadcast"))
-				.message(gson.toJson(message))
-				.build());
-		
-		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(gameItem.getChannelId()));
-
-		try {
-			HttpRequest request = requestFactory.buildPostRequest(url, content);
-			initHttpHeaders(request, authToken);
-			
-			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
-			HttpResponse response =  request.execute();
-			success = response.isSuccessStatusCode();
-			response.disconnect();
-		} catch (IOException e) {
-			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
-					gameItem.getChannelId(), urlString), e);
-		}
-		return success;
+		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
 	}
 	
 	public boolean notifyChannelGameEnded(GameItem gameItem) {
-		String channelId = gameItem.getChannelId();
-		boolean success = false;
-		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);		
-		GenericUrl url = new GenericUrl(urlString);
+		String urlString = getSendExtensionPubSubMessageUrl(gameItem.getChannelId());
 
-		
 		EndGameMessage message = GameItemToEndgamePubSubMessageMapper.get(gameItem);
 		
-		HttpContent content = new JsonHttpContent(jsonFactory, 
-				PubSubMessage.builder()
-				.contentType(PubSubMessage.JSON)
-				.targets(Arrays.asList("broadcast"))
-				.message(gson.toJson(message, message.getClass()))
-				.build());
-		
-		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(channelId));
-
-		try {
-			HttpRequest request = requestFactory.buildPostRequest(url, content);
-			initHttpHeaders(request, authToken);
-			
-			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
-			HttpResponse response =  request.execute();
-			success = response.isSuccessStatusCode();
-			response.disconnect();
-		} catch (IOException e) {
-			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
-					channelId, urlString), e);
-		}
-		return success;
+		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
 	}
 	
 	public boolean notifyChannelGameCancelled(GameItem gameItem, GameCancellationReason cancellationReason) {
-		boolean success = false;
-		String channelId = gameItem.getChannelId();
-		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);		
-		GenericUrl url = new GenericUrl(urlString);
-
+		String urlString = getSendExtensionPubSubMessageUrl(gameItem.getChannelId());	
 		
 		CancelGameMessage message = CancelGameMessage.builder()
 				.game(gameItem.getGame())
@@ -175,64 +97,16 @@ public final class TwitchClient {
 				.gameStatus(gameItem.getGameStatus())
 				.cancellationReason(cancellationReason)
 				.build();
-		
-		HttpContent content = new JsonHttpContent(jsonFactory, 
-				PubSubMessage.builder()
-				.contentType(PubSubMessage.JSON)
-				.targets(Arrays.asList("broadcast"))
-				.message(gson.toJson(message))
-				.build());
-		
-		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(channelId));
 
-		try {
-			HttpRequest request = requestFactory.buildPostRequest(url, content);
-			initHttpHeaders(request, authToken);
-			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
-			
-			HttpResponse response =  request.execute();
-			success = response.isSuccessStatusCode();
-			response.disconnect();
-		} catch (IOException e) {
-			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
-					channelId, urlString), e);
-		}
-		
-		return success;
+		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
 	}
 	
 	public boolean notifyChannelPlayerComplete(PlayerCompleteRequest playerCompleteRequest) {
-		boolean success = false;
-		String channelId = playerCompleteRequest.getChannelId();
-		String urlString = String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);		
-		GenericUrl url = new GenericUrl(urlString);
-
+		String urlString = getSendExtensionPubSubMessageUrl(playerCompleteRequest.getChannelId());	
 		
 		PubSubGameMessage message = PlayerToPlayerCompletePubSubMessageMapper.get(playerCompleteRequest);
 		
-		HttpContent content = new JsonHttpContent(jsonFactory, 
-				PubSubMessage.builder()
-				.contentType(PubSubMessage.JSON)
-				.targets(Arrays.asList("broadcast"))
-				.message(gson.toJson(message, message.getClass()))
-				.build());
-		
-		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(channelId));
-
-		try {
-			HttpRequest request = requestFactory.buildPostRequest(url, content);
-			initHttpHeaders(request, authToken);
-			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
-			
-			HttpResponse response =  request.execute();
-			success = response.isSuccessStatusCode();
-			response.disconnect();
-		} catch (IOException e) {
-			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
-					channelId, urlString), e);
-		}
-		
-		return success;
+		return sendPubSubMessage(message, playerCompleteRequest.getChannelId(), urlString);
 	}
 	
 	public boolean sendExtensionChatMessage(String channelId, String message) {
@@ -247,14 +121,8 @@ public final class TwitchClient {
 		String authToken = jwtProvider.signJwt(getClaimsForExtensionChatMessage(channelId));
 		
 		try {
-			HttpRequest request = requestFactory.buildPostRequest(url, content);
-			initHttpHeaders(request, authToken);
-			// THIS IS NOT AS IMPORTANT TO RETRY.
-			//request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());
-			
-			HttpResponse response =  request.execute();
-			success = response.isSuccessStatusCode();
-			response.disconnect();
+			sendHttpPostRequest(content, url, authToken, false);
+			success = true;
 		} catch (IOException e) {
 			throw new RuntimeException(String.format("Exception thrown while sending extension chat message to channel [%s] at url [%s]",
 					channelId, urlString), e);
@@ -285,6 +153,40 @@ public final class TwitchClient {
 		return claimsAsMap;
 	}
 	
+	
+	private boolean sendPubSubMessage(PubSubGameMessage message, String channelId, String urlString) {
+		boolean success = false;
+		HttpContent content = new JsonHttpContent(jsonFactory, 
+				PubSubMessage.builder()
+				.contentType(PubSubMessage.JSON)
+				.targets(Arrays.asList("broadcast"))
+				.message(gson.toJson(message, message.getClass()))
+				.build());
+		
+		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(channelId));
+		GenericUrl url = new GenericUrl(urlString);
+		try {
+			sendHttpPostRequest(content, url, authToken, true);
+			success = true;
+		} catch (IOException e) {
+			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
+					channelId, urlString), e);
+		}
+		return success;
+	}
+	
+	private void sendHttpPostRequest(HttpContent content, GenericUrl url, String authToken, boolean retry)
+			throws IOException {
+		HttpRequest request = requestFactory.buildPostRequest(url, content);
+		initHttpHeaders(request, authToken);
+		
+		if (retry) {
+			request.setUnsuccessfulResponseHandler(getUnsuccessfulResponseHandler());	
+		}
+		HttpResponse response =  request.execute();
+		response.disconnect();
+	}
+	
 	private void initHttpHeaders(HttpRequest request, String authToken) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.fromHttpHeaders(request.getHeaders());
@@ -296,6 +198,11 @@ public final class TwitchClient {
 	
 	private HttpUnsuccessfulResponseHandler getUnsuccessfulResponseHandler() {
 		return new HttpBackOffUnsuccessfulResponseHandler(new ExponentialBackOff());
+	}
+	
+	private String getSendExtensionPubSubMessageUrl(String channelId) {
+		return String.format("%s/extensions/%s/%s/channels/%s/chat", 
+				TWITCH_API_BASE_URL, clientId, extensionVersion, channelId);
 	}
 	
 }
