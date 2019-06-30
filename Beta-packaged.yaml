@@ -155,6 +155,8 @@ Resources:
         AttributeType: S
       - AttributeName: PlayerStatus
         AttributeType: S
+      - AttributeName: Score
+        AttributeType: N
       KeySchema:
       - AttributeName: GameId
         KeyType: HASH
@@ -169,6 +171,14 @@ Resources:
           KeyType: RANGE
         Projection:
           ProjectionType: ALL
+      - IndexName: GameId-Score-Index
+        KeySchema:
+        - AttributeName: GameId
+          KeyType: HASH
+        - AttributeName: Score
+          KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
       ProvisionedThroughput:
         ReadCapacityUnits: '1'
         WriteCapacityUnits: '1'
@@ -177,7 +187,7 @@ Resources:
   SengageWSLambdaFunction:
     DependsOn: SengamesGameTaskHandlerLambdaFunction
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/5184219d9fb2f5762f7b3706778632dd
+      CodeUri: s3://deployment-us-east-1-lambdas-1/78f81eab9b35b9328ba429880fbd7b0b
       FunctionName:
         Fn::Join:
         - ''
@@ -206,7 +216,7 @@ Resources:
     Type: AWS::Serverless::Api
   SengamesCWEventHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/5184219d9fb2f5762f7b3706778632dd
+      CodeUri: s3://deployment-us-east-1-lambdas-1/78f81eab9b35b9328ba429880fbd7b0b
       FunctionName:
         Fn::Join:
         - ''
@@ -224,7 +234,7 @@ Resources:
     Type: AWS::Serverless::Function
   SengamesGameTaskHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/5184219d9fb2f5762f7b3706778632dd
+      CodeUri: s3://deployment-us-east-1-lambdas-1/78f81eab9b35b9328ba429880fbd7b0b
       FunctionName:
         Fn::Join:
         - ''

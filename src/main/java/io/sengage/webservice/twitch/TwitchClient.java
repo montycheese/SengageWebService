@@ -201,8 +201,7 @@ public final class TwitchClient {
 	}
 	
 	private String getSendExtensionPubSubMessageUrl(String channelId) {
-		return String.format("%s/extensions/%s/%s/channels/%s/chat", 
-				TWITCH_API_BASE_URL, clientId, extensionVersion, channelId);
+		return  String.format("%s/extensions/message/%s", TWITCH_API_BASE_URL, channelId);
 	}
 	
 }
