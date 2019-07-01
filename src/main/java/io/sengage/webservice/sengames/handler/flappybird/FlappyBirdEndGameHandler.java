@@ -2,6 +2,7 @@ package io.sengage.webservice.sengames.handler.flappybird;
 
 import java.util.List;
 
+import lombok.extern.log4j.Log4j2;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
@@ -14,6 +15,7 @@ import io.sengage.webservice.twitch.TwitchClient;
 import io.sengage.webservice.utils.Constants;
 import io.sengage.webservice.utils.GameToPlayerClassMapper;
 
+@Log4j2
 public class FlappyBirdEndGameHandler extends EndGameHandler {
 	private final TwitchClient twitchClient;
 	private final StepFunctionTaskExecutor sfExecutor;
@@ -53,7 +55,7 @@ public class FlappyBirdEndGameHandler extends EndGameHandler {
 				gameDataProvider.updateGame(gameItem);	
 			} catch(Exception e2) {
 				e2.printStackTrace();
-				System.out.println("SingleStrokeEndGameHandler(): Failed to persist moving game to error state");
+				log.warn("FlappyBirdEndGameHandler(): Failed to persist moving game to error state");
 				throw e;
 			}
 		} finally {
@@ -73,6 +75,7 @@ public class FlappyBirdEndGameHandler extends EndGameHandler {
 		else {
 			message = String.format(Constants.SINGLE_WINNER_FLAPPY_BIRD_MESSAGE_FORMAT, topPlayer.getUserName(), topPlayer.getScore());	
 		}
+		log.debug(String.format("FlappyBirdEndGameHandler(): sending message %s to channel %s", message, gameItem.getChannelId()));
 		twitchClient.sendExtensionChatMessage(gameItem.getChannelId(), message);
 		
 	}

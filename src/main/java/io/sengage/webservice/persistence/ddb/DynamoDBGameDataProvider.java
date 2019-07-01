@@ -27,7 +27,6 @@ public class DynamoDBGameDataProvider implements GameDataProvider {
 		try {
 			mapper.save(gameItem);
 		} catch (ConditionalCheckFailedException e) {
-			e.printStackTrace();
 			throw new ItemVersionMismatchException(e);
 		}
 	}

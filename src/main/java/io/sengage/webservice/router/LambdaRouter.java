@@ -29,11 +29,9 @@ public class LambdaRouter {
 				Class<?> clazz;
 				try {
 					clazz = Class.forName(entry.getKey());
-					System.out.println("Before");
 					@SuppressWarnings("unchecked")
 					BaseLambda<ServerlessInput, ServerlessOutput> activity = 
 							(BaseLambda<ServerlessInput, ServerlessOutput>) clazz.newInstance();
-					System.out.println("After");
 					return Optional.of(activity);
 				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 					e.printStackTrace();

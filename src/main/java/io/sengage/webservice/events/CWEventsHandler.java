@@ -2,6 +2,7 @@ package io.sengage.webservice.events;
 
 import javax.inject.Inject;
 
+import lombok.extern.log4j.Log4j2;
 import io.sengage.webservice.dagger.DaggerTaskComponent;
 import io.sengage.webservice.dagger.TaskComponent;
 import io.sengage.webservice.function.BaseLambda;
@@ -13,9 +14,9 @@ import io.sengage.webservice.sengames.handler.StartGameHandler;
 import io.sengage.webservice.sengames.handler.StartGameHandlerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 
+@Log4j2
 public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 
 
@@ -24,8 +25,7 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 	
 	@Inject
 	EndGameHandlerFactory endGameHandlerFactory;
-	
-	private LambdaLogger logger;
+
 	
 	public CWEventsHandler() {
 		TaskComponent component = DaggerTaskComponent.create();
@@ -34,8 +34,7 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 	
 	@Override
 	public Void handleRequest(ScheduledEvent event, Context context) {
-		logger = context.getLogger();
-		logger.log("handleEvent(): input: " + event);
+		log.info("handleEvent(): input: " + event);
 		
 		EventDetail detailType = EventDetail.valueOf(event.getDetailType());
 		String gameId = (String) event.getDetail().get(GameItemDigest.GAME_ID_ATTR_KEY);
