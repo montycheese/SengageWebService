@@ -34,7 +34,7 @@ public class JoinGameHandler {
 		if (!optionalGame.isPresent()) {
 			throw new IllegalStateException("Could not find game with id: " + gameId);
 		} else if (optionalGame.get().getGameStatus().isAfter(GameStatus.WAITING_FOR_PLAYERS)) {
-			// TODO throw
+			throw new IllegalStateException("Could not join game because it has already started.");
 		}
 		// todo also check if game is full
 		

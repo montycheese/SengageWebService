@@ -2,6 +2,8 @@ package io.sengage.webservice.sengames.handler.flappybird;
 
 import java.util.Optional;
 
+import lombok.extern.log4j.Log4j2;
+
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
 import com.google.gson.Gson;
 
@@ -24,6 +26,7 @@ import io.sengage.webservice.twitch.FlappyBirdPlayerCompleteRequest;
 import io.sengage.webservice.twitch.PlayerCompleteRequest;
 import io.sengage.webservice.twitch.TwitchClient;
 
+@Log4j2
 public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 
 	private final PlayerDataProvider playerDataProvider;
@@ -65,7 +68,7 @@ public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 		
 		// TODO since we want to let people submit more than once maybe remove this line of code.
 		if (!player.getPlayerStatus().equals(PlayerStatus.PLAYING)) {
-			throw new RuntimeException("Player already submitted a stroke " + player.getOpaqueId());
+			throw new RuntimeException("Player already submitted a flight " + player.getOpaqueId());
 		}
 		// TODO handle case where player submit more than 1 attempt and save highest scoring attempt
 		player = new FlappyBirdPlayer(
@@ -94,7 +97,7 @@ public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 		// we don't want the game to end if a player joins and submits the flight before any other player has the chance
 		// to join the game
 		if (playersRemaining <= 0 && GameStatus.IN_PROGRESS.equals(game.getGameStatus())) {
-			System.out.println("All players are finished, creating CWE event.");
+			log.debug("All players are finished, creating CWE event.");
 			notifyAllPlayersAreFinished(game);
 		} else {
 			PlayerCompleteRequest playerCompleteRequest = FlappyBirdPlayerCompleteRequest.builder()

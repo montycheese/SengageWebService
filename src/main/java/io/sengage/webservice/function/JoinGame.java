@@ -2,10 +2,11 @@ package io.sengage.webservice.function;
 
 import javax.inject.Inject;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.apache.http.HttpStatus;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.gson.Gson;
 
@@ -19,6 +20,7 @@ import io.sengage.webservice.model.ServerlessOutput;
 import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.sengames.handler.JoinGameHandler;
 
+@Log4j2
 public class JoinGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 	
 	@Inject
@@ -30,8 +32,6 @@ public class JoinGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 	@Inject 
 	JoinGameHandler joinGameHandler;
 	
-	private LambdaLogger logger;
-	
 	public JoinGame() {
 		ExtensionComponent component = DaggerExtensionComponent.create();
 		component.injectJoinGame(this);
@@ -39,8 +39,7 @@ public class JoinGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 
 	@Override
 	public ServerlessOutput handleRequest(ServerlessInput serverlessInput, Context context) {
-		logger = context.getLogger();
-		logger.log("JoinGame(): input: " + serverlessInput);
+		log.debug("JoinGame(): input: " + serverlessInput);
 		
 		
 		DecodedJWT jwt = authHelper.authenticateRequestAndVerifyToken(parseAuthTokenFromHeaders(serverlessInput.getHeaders()));
@@ -57,7 +56,7 @@ public class JoinGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 		} catch (Exception e) {
 			joinedSuccessfully = false;
 			failureReason = e.getMessage();
-			e.printStackTrace();
+			log.warn("Failed to join user {} to game {}", streamContext.getOpaqueId(), request.getGameId(), e);
 		}
 		
 		return ServerlessOutput.builder()
