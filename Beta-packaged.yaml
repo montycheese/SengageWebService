@@ -187,7 +187,7 @@ Resources:
   SengageWSLambdaFunction:
     DependsOn: SengamesGameTaskHandlerLambdaFunction
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/638cce5269d54a4246f9d94887e77782
+      CodeUri: s3://deployment-us-east-1-lambdas-1/a74f8b8c347e6f6fe8e5ebda16d1c44f
       FunctionName:
         Fn::Join:
         - ''
@@ -216,7 +216,7 @@ Resources:
     Type: AWS::Serverless::Api
   SengamesCWEventHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/638cce5269d54a4246f9d94887e77782
+      CodeUri: s3://deployment-us-east-1-lambdas-1/a74f8b8c347e6f6fe8e5ebda16d1c44f
       FunctionName:
         Fn::Join:
         - ''
@@ -234,7 +234,7 @@ Resources:
     Type: AWS::Serverless::Function
   SengamesGameTaskHandlerLambdaFunction:
     Properties:
-      CodeUri: s3://deployment-us-east-1-lambdas-1/638cce5269d54a4246f9d94887e77782
+      CodeUri: s3://deployment-us-east-1-lambdas-1/a74f8b8c347e6f6fe8e5ebda16d1c44f
       FunctionName:
         Fn::Join:
         - ''

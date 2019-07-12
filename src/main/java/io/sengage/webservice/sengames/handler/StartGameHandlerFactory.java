@@ -31,15 +31,10 @@ public class StartGameHandlerFactory {
 	public StartGameHandler get(Game game) {
 		switch (game) {
 		case FLAPPY_BIRD_BR:
-			return StartGameHandler.builder()
-					.gameDataProvider(gameDataProvider)
-					.playerDataProvider(playerDataProvider)
-					.sfExecutor(sfExecutor)
-					.twitchClient(twitchClient)
-					.build();
+			return new StartGameHandler(gameDataProvider, playerDataProvider, twitchClient, sfExecutor);
 		case SINGLE_STROKE:
-			SingleStrokeEndGameHandler handler = (SingleStrokeEndGameHandler) endGameHandlerFactory.get(game);
-			return new SingleStrokeStartGameHandler(gameDataProvider, playerDataProvider, twitchClient, sfExecutor, handler);
+			SingleStrokeEndGameHandler ssHandler = (SingleStrokeEndGameHandler) endGameHandlerFactory.get(game);
+			return new SingleStrokeStartGameHandler(gameDataProvider, playerDataProvider, twitchClient, sfExecutor, ssHandler);
 		default:
 			throw new IllegalArgumentException("Unsupported game: " + game);
 		}

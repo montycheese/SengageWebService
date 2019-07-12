@@ -10,10 +10,12 @@ import io.sengage.webservice.sengames.model.flappybird.CreateFlappyBirdGameParam
 public class FlappyBirdStartGameMessage extends StartGameMessage {
 
 	private int difficulty;
+	private int totalPlayers;
 	
-	public FlappyBirdStartGameMessage(GameItem gameItem) {
+	public FlappyBirdStartGameMessage(GameItem gameItem, int totalPlayers) {
 		super(gameItem);
 		this.difficulty = ((CreateFlappyBirdGameParameters)
 				gameItem.getGameSpecificParameters()).getDifficulty();
+		this.totalPlayers = totalPlayers;
 	}
 }

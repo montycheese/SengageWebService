@@ -3,6 +3,8 @@ package io.sengage.webservice.sf;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import lombok.extern.log4j.Log4j2;
+
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsAsync;
 import com.amazonaws.services.stepfunctions.builder.StateMachine;
 import com.amazonaws.services.stepfunctions.builder.states.EndTransition;
@@ -22,6 +24,7 @@ import io.sengage.webservice.events.EventDetail;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.utils.GameToWaitForPlayersToJoinDurationMapper;
 
+@Log4j2
 public class StepFunctionTaskExecutor {
 
 	private final Gson gson;
@@ -51,7 +54,7 @@ public class StepFunctionTaskExecutor {
 		
 		StartExecutionResult response = sfClient.startExecution(startExecutionRequest);
 		
-		System.out.println("StepFunctionTaskExecutor#executeStartGameStateMachine(): Started Execution " + response.getExecutionArn());
+		log.info("StepFunctionTaskExecutor#executeStartGameStateMachine(): Started Execution " + response.getExecutionArn());
 		
 		return stateMachineArn;
 	}
@@ -72,13 +75,12 @@ public class StepFunctionTaskExecutor {
 		for (String arn : gameItem.getStateMachineArns()) {
 			DeleteStateMachineRequest req = new DeleteStateMachineRequest()
 				.withStateMachineArn(arn);
-			System.out.println("Deleting State Machine with arn: " + arn);
+			log.info("Deleting State Machine with arn: " + arn);
 			try {
 				// make async/
 				sfClient.deleteStateMachine(req);
 			} catch (Exception e) {
-				System.out.println("Failed to delete State Machine with arn: " + arn);
-				e.printStackTrace();
+				log.error("Failed to delete State Machine with arn: " + arn, e);
 			}
 		}
 	}
@@ -115,7 +117,7 @@ public class StepFunctionTaskExecutor {
 		
 		CreateStateMachineResult result = sfClient.createStateMachine(req);
 		
-		System.out.println("Successfully created state machine with arn:" + result.getStateMachineArn());
+		log.info("Successfully created state machine with arn:" + result.getStateMachineArn());
 		
 		return result.getStateMachineArn();
 	}
@@ -149,7 +151,7 @@ public class StepFunctionTaskExecutor {
 		
 		CreateStateMachineResult result = sfClient.createStateMachine(req);
 		
-		System.out.println("Successfully created state machine with arn:" + result.getStateMachineArn());
+		log.info("Successfully created state machine with arn:" + result.getStateMachineArn());
 		
 		return result.getStateMachineArn();
 	}

@@ -3,6 +3,7 @@ package io.sengage.webservice.sengames.handler;
 import java.util.Optional;
 
 import lombok.Builder;
+import lombok.extern.log4j.Log4j2;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.GameCancellationReason;
 import io.sengage.webservice.model.GameItem;
@@ -11,8 +12,10 @@ import io.sengage.webservice.model.PlayerStatus;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
+import io.sengage.webservice.twitch.NotifyGameStartedRequest;
 import io.sengage.webservice.twitch.TwitchClient;
 
+@Log4j2
 @Builder
 public class StartGameHandler {
 
@@ -40,7 +43,7 @@ public class StartGameHandler {
 		GameItem game = optionalGame.get();
 		
 		if (game.getGameStatus().isOnOrAfter(GameStatus.IN_PROGRESS)) {
-			System.out.println(String.format("Game status is already: %s, skipping update", GameStatus.IN_PROGRESS.name()));
+			log.warn(String.format("Game status is already: %s, skipping update", GameStatus.IN_PROGRESS.name()));
 			return;
 		}
 		
@@ -57,11 +60,14 @@ public class StartGameHandler {
 			try {
 				gameDataProvider.updateGame(game);
 			} catch (ItemVersionMismatchException e) {
-				e.printStackTrace();
+				log.error("Encountered exception while trying to update game state", e);
 				return;
 			}
 			
-			twitchClient.notifyChannelGameStarted(game);
+			twitchClient.notifyChannelGameStarted(NotifyGameStartedRequest.builder()
+					.gameItem(game)
+					.totalPlayers(numPlayersJoined)
+					.build());
 		}
 	}
 	
@@ -71,7 +77,7 @@ public class StartGameHandler {
 		try {
 			gameDataProvider.updateGame(game);
 		} catch (ItemVersionMismatchException e) {
-			e.printStackTrace();
+			log.error("Encountered exception while trying to cancel game", e);
 			return;
 		}
 		twitchClient.notifyChannelGameCancelled(game, GameCancellationReason.NO_PLAYERS);

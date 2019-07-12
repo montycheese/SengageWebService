@@ -12,7 +12,7 @@ import io.sengage.webservice.sengames.model.pubsub.PubSubGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.StartGameMessage;
 import io.sengage.webservice.utils.GameItemToEndgamePubSubMessageMapper;
 import io.sengage.webservice.utils.GameItemToJoinGamePubSubMessageMapper;
-import io.sengage.webservice.utils.GameItemToStartGamePubSubMessageMapper;
+import io.sengage.webservice.utils.StartGamePubSubMessageMapper;
 import io.sengage.webservice.utils.PlayerToPlayerCompletePubSubMessageMapper;
 
 import java.io.IOException;
@@ -73,11 +73,11 @@ public final class TwitchClient {
 		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
 	}
 	
-	public boolean notifyChannelGameStarted(GameItem gameItem) {
-		String urlString = getSendExtensionPubSubMessageUrl(gameItem.getChannelId());
+	public boolean notifyChannelGameStarted(NotifyGameStartedRequest request) {
+		String urlString = getSendExtensionPubSubMessageUrl(request.getGameItem().getChannelId());
 
-		StartGameMessage message = GameItemToStartGamePubSubMessageMapper.get(gameItem);
-		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
+		StartGameMessage message = StartGamePubSubMessageMapper.get(request);
+		return sendPubSubMessage(message, request.getGameItem().getChannelId(), urlString);
 	}
 	
 	public boolean notifyChannelGameEnded(GameItem gameItem) {
