@@ -86,7 +86,9 @@ public class StepFunctionTaskExecutor {
 	}
 	
 	private String createGameTimeUpStateMachine(GameItem gameItem) {
-		int secondsToWaitToExpireGame = gameItem.getDuration();
+		int waitDuration = GameToWaitForPlayersToJoinDurationMapper.get(gameItem.getGame());
+		// subtract the time we use to allow players to join the game from the overall game time.
+		int secondsToWaitToExpireGame = gameItem.getDuration() - waitDuration;
 		CreateStateMachineRequest req = new CreateStateMachineRequest();
 		
 		String invokeExpireGameLambdaStateName = "ExpireGameState";

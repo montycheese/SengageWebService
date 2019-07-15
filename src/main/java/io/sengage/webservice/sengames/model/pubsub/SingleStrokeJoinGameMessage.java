@@ -9,9 +9,9 @@ public class SingleStrokeJoinGameMessage extends JoinGameMessage {
 	private String image;
 	
 	public SingleStrokeJoinGameMessage(String gameId, Game game,
-			GameStatus gameStatus, int waitDuration, int gameDuration, long gameEndTimeEpochMilli,
+			GameStatus gameStatus, int waitDuration, int gameDuration, long gameStartTimeEpochMilli, long gameEndTimeEpochMilli,
 			String image) {
-		super(gameId, game, gameStatus, waitDuration, gameDuration, gameEndTimeEpochMilli);
+		super(gameId, game, gameStatus, waitDuration, gameDuration, gameStartTimeEpochMilli, gameEndTimeEpochMilli);
 		this.image = image;
 	}
 }

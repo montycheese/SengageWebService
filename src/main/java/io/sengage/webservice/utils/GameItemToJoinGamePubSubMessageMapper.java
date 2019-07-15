@@ -14,12 +14,14 @@ public class GameItemToJoinGamePubSubMessageMapper {
 	public static JoinGameMessage get(GameItem gameItem) {
 		switch (gameItem.getGame()) {
 		case SINGLE_STROKE:
+			int waitDuration = GameToWaitForPlayersToJoinDurationMapper.get(gameItem.getGame());
 			return new SingleStrokeJoinGameMessage(
 					gameItem.getGameId(),
 					gameItem.getGame(),
 					gameItem.getGameStatus(),
-					GameToWaitForPlayersToJoinDurationMapper.get(gameItem.getGame()),
+					waitDuration,
 					gameItem.getDuration(),
+					gameItem.getCreatedAt().plus(waitDuration, ChronoUnit.SECONDS).toEpochMilli(),
 					gameItem.getCreatedAt().plus(gameItem.getDuration(), ChronoUnit.SECONDS).toEpochMilli(),
 					((CreateSingleStrokeGameParameters) gameItem.getGameSpecificParameters()).getImage()
 					);
