@@ -10,10 +10,12 @@ import io.sengage.webservice.sengames.model.singlestroke.CreateSingleStrokeGameP
 public class SingleStrokeStartGameMessage extends StartGameMessage {
 
 	private String image;
+	private int totalPlayers;
 	
-	public SingleStrokeStartGameMessage(GameItem gameItem) {
+	public SingleStrokeStartGameMessage(GameItem gameItem, int totalPlayers) {
 		super(gameItem);
 		this.image = ((CreateSingleStrokeGameParameters)
 				gameItem.getGameSpecificParameters()).getImage();
+		this.totalPlayers = totalPlayers;
 	}
 }

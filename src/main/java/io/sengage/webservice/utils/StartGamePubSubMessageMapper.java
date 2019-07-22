@@ -11,7 +11,7 @@ public final class StartGamePubSubMessageMapper {
 		
 		switch (request.getGameItem().getGame()) {
 		case SINGLE_STROKE:
-			return new SingleStrokeStartGameMessage(request.getGameItem());
+			return new SingleStrokeStartGameMessage(request.getGameItem(), request.getTotalPlayers());
 		case FLAPPY_BIRD_BR:
 			return new FlappyBirdStartGameMessage(request.getGameItem(), request.getTotalPlayers());
 		default:
