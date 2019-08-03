@@ -3,6 +3,7 @@ package io.sengage.webservice.dagger;
 import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
+import io.sengage.webservice.function.Ping;
 import io.sengage.webservice.function.UpdateGameState;
 
 import javax.inject.Singleton;
@@ -16,4 +17,5 @@ public interface ExtensionComponent {
 	void injectUpdateGameState(UpdateGameState updateGameState);
 	void injectJoinGame(JoinGame joinGame);
 	void injectGetFinalGameResults(GetFinalGameResults getFinalGameResults);
+	void injectPing(Ping ping);
 }

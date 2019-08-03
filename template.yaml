@@ -47,6 +47,12 @@ Resources:
       MemorySize: 320
       Role: !GetAtt DefaultLambdaInvocationRole.Arn
       CodeUri: ./target/webservice-1.0.0.jar
+      Events:
+        Canary:
+          Type: Schedule
+          Properties:
+              Schedule: rate(60 minutes)
+              Input: "{ \"httpMethod\": \"GET\", \"path\": \"/ping\" }"
       #Events:
       #  SengageWSWebService:
       #      Type: Api
@@ -64,6 +70,12 @@ Resources:
       MemorySize: 320
       Role: !GetAtt DefaultLambdaInvocationRole.Arn
       CodeUri: ./target/webservice-1.0.0.jar
+      Events:
+        Canary:
+          Type: Schedule
+          Properties:
+              Schedule: rate(60 minutes)
+              Input: "{ \"detailType\": \"PING\"}"
   SengamesGameTaskHandlerLambdaFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -74,6 +86,12 @@ Resources:
       MemorySize: 320
       Role: !GetAtt DefaultLambdaInvocationRole.Arn
       CodeUri: ./target/webservice-1.0.0.jar
+      Events:
+        Canary:
+          Type: Schedule
+          Properties:
+              Schedule: rate(60 minutes)
+              Input: "{ \"eventDetail\": \"PING\"}"
 
           
         

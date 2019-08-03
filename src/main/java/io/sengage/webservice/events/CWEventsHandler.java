@@ -37,6 +37,10 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 		log.info("handleEvent(): input: " + event);
 		
 		EventDetail detailType = EventDetail.valueOf(event.getDetailType());
+		if (EventDetail.PING.equals(detailType)) {
+			return null;
+		}
+		
 		String gameId = (String) event.getDetail().get(GameItemDigest.GAME_ID_ATTR_KEY);
 		Game game = Game.valueOf((String) event.getDetail().get(GameItemDigest.GAME_ATTR_KEY));
 		
@@ -53,6 +57,8 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 			StartGameHandler startGameHandler = startGameHandlerFactory.get(game);
 			startGameHandler.startGame(gameId);
 			break;
+		case PING:
+			return null;
 		default:
 			throw new IllegalArgumentException("Unsupported event detail: " + detailType);
 		

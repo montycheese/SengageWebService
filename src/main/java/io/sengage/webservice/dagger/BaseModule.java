@@ -15,6 +15,7 @@ import com.google.gson.TypeAdapterFactory;
 import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
+import io.sengage.webservice.function.Ping;
 import io.sengage.webservice.function.UpdateGameState;
 import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.model.GameSpecificParameters;
@@ -43,6 +44,11 @@ public class BaseModule {
 	@Singleton
 	static LambdaRouter provideLambdaRouter() {
 		return new LambdaRouter()
+			.registerActivity(Resource.builder()
+					.className(Ping.class.getName())
+					.httpMethod("GET")
+					.pattern(Pattern.compile("^/ping$"))
+					.build())
 			.registerActivity(Resource.builder()
 					.className(CreateGame.class.getName())
 					.httpMethod("POST")

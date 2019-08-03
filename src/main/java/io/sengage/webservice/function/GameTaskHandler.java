@@ -12,9 +12,11 @@ import io.sengage.webservice.sf.GameContextInput;
 
 import javax.inject.Inject;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
+import lombok.extern.log4j.Log4j2;
 
+import com.amazonaws.services.lambda.runtime.Context;
+
+@Log4j2
 public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 
 
@@ -24,8 +26,6 @@ public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 	@Inject
 	EndGameHandlerFactory endGameHandlerFactory;
 	
-	private LambdaLogger logger;
-	
 	public GameTaskHandler() {
 		TaskComponent component = DaggerTaskComponent.create();
 		component.injectGameTaskHandler(this);
@@ -33,10 +33,13 @@ public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 	
 	@Override
 	public Void handleRequest(GameContextInput input, Context context) {
-		logger = context.getLogger();
-		logger.log("handleEvent(): input: " + input);
+		log.info("handleEvent(): input: " + input);
 		
 		EventDetail detailType = input.getEventDetail();
+		if (EventDetail.PING.equals(detailType)) {
+			return null;
+		}
+		
 		String gameId = input.getGameId();
 		Game game = input.getGame();
 		
@@ -53,6 +56,8 @@ public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 			StartGameHandler startGameHandler = startGameHandlerFactory.get(game);
 			startGameHandler.startGame(gameId);
 			break;
+		case PING:
+			return null;
 		default:
 			throw new IllegalArgumentException("Unsupported event detail: " + detailType);
 		
