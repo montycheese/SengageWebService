@@ -3,6 +3,7 @@ package io.sengage.webservice.function;
 import io.sengage.webservice.dagger.ActivityComponent;
 import io.sengage.webservice.dagger.DaggerActivityComponent;
 import io.sengage.webservice.exception.GameCompletedException;
+import io.sengage.webservice.exception.GameInProgressException;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
 import io.sengage.webservice.router.LambdaRouter;
@@ -53,12 +54,16 @@ public final class RequestHandler extends BaseLambda<ServerlessInput, Serverless
 			log.warn("Could not find matching route for: " + serverlessInput.getPath());
 			output.setStatusCode(HttpStatus.SC_NOT_FOUND);
         	logException(logger, e);
-            output.setBody(e.getMessage());
+            output.setBody("Could not find path " + serverlessInput.getPath());
 		} catch(JWTVerificationException e) {
 		 	log.warn("RequestHandler#handleRequest(): JWT token verification error: " + e.getMessage());
 			output.setStatusCode(HttpStatus.SC_UNAUTHORIZED);
         	logException(logger, e);
-            output.setBody(e.getMessage());
+            output.setBody("Unauthorized caller.");
+		} catch (GameInProgressException e) {
+			log.warn("RequestHandler#handleRequest()", e);
+			output.setStatusCode(HttpStatus.SC_BAD_REQUEST);
+			output.setBody(e.getMessage());
 		} catch (Exception e) {
 			Throwable throwable = Throwables.getRootCause(e);
 			if (throwable instanceof GameCompletedException) {
@@ -70,7 +75,7 @@ public final class RequestHandler extends BaseLambda<ServerlessInput, Serverless
 	        	log.warn("RequestHandler#handleRequest(): unexpected exception thrown during execution " + e.getMessage());
 	        	output.setStatusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 	        	logException(logger, e);
-	            output.setBody(e.getMessage());
+	            output.setBody("Unexpected error occurred while processing request");
 			}
 		}
 		

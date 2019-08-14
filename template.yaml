@@ -204,6 +204,10 @@ Resources:
       AttributeDefinitions:
         - AttributeName: GameId
           AttributeType: S
+        - AttributeName: channelId
+          AttributeType: S
+        - AttributeName: gameStatus
+          AttributeType: S
       KeySchema:
         - AttributeName: GameId
           KeyType: HASH
@@ -211,6 +215,18 @@ Resources:
         ReadCapacityUnits: "1"
         WriteCapacityUnits: "1"
       TableName: Game
+      GlobalSecondaryIndexes:
+        - IndexName: "channelId-gameStatus-Index"
+          KeySchema:
+            - AttributeName: channelId
+              KeyType: HASH
+            - AttributeName: gameStatus
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput: 
+            ReadCapacityUnits: "1"
+            WriteCapacityUnits: "1"
       
   PlayerTable:
     Condition: CreateTable
