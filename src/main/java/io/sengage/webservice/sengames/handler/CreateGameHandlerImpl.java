@@ -45,7 +45,8 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 			GameSpecificParameters parameters, int duration,
 			StreamContext streamContext) {
 		
-		// see if game already is being played on the channel
+		// TODO: currently disabled for testing purposes
+		/* see if game already is being played on the channel
 		// ignore games that are more than 30 min old to avoid leaked games from screwing with the number 
 		Instant timeWindowToIgnore = Instant.now().minus(30, ChronoUnit.MINUTES);
 		int numGamesInProgress = gameDataProvider.getNumberOfGamesWithStatuses(streamContext.getChannelId(), GAME_IN_PROGRESS_STATUSES, timeWindowToIgnore);
@@ -53,7 +54,7 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 		if (numGamesInProgress > 0) {
 			log.warn("{} game(s) already in progress. Cannot create new game for channel {}", numGamesInProgress, streamContext.getChannelId());
 			throw new GameInProgressException("Cannot start new game because one is currently in progress");
-		}
+		}*/
 		
 		// create game persistence object
 		GameItem item = GameItem.from(game, parameters, duration, streamContext);
