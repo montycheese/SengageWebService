@@ -3,7 +3,6 @@ package io.sengage.webservice.sengames.handler.flappybird;
 import java.util.List;
 
 import lombok.extern.log4j.Log4j2;
-import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
 import io.sengage.webservice.model.Player;
@@ -35,28 +34,23 @@ public class FlappyBirdEndGameHandler extends EndGameHandler {
 	protected void handleEndGame(GameItem gameItem) {		
 		try {		
 			twitchClient.notifyChannelGameEnded(gameItem);
+			gameDataProvider.updateGame(gameItem);
 			
-			try {
-				gameDataProvider.updateGame(gameItem);
-			} catch (ItemVersionMismatchException e) {
-				throw new RuntimeException(e);
-			}
 			try {
 				sendExtensionChatMessage(gameItem);
 			} catch (Exception e) {
+				log.warn("Failed to send extension chat message.", e);
 				// It's OK to swallow this.
-				e.printStackTrace();
 			}
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.warn("Caught unexpected exception while ending game", e);
 			gameItem.setGameStatus(GameStatus.ERROR_STATE);
 			try {
 				gameDataProvider.updateGame(gameItem);	
 			} catch(Exception e2) {
-				e2.printStackTrace();
-				log.warn("FlappyBirdEndGameHandler(): Failed to persist moving game to error state");
-				throw e;
+				log.warn("FlappyBirdEndGameHandler(): Failed to persist moving game to error state", e2);
+				throw new RuntimeException(e);
 			}
 		} finally {
 			sfExecutor.cleanUpGameStateMachineResources(gameItem);
