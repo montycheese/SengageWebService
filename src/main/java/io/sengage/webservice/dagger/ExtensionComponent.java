@@ -1,5 +1,6 @@
 package io.sengage.webservice.dagger;
 
+import io.sengage.webservice.function.CancelGame;
 import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
@@ -17,5 +18,6 @@ public interface ExtensionComponent {
 	void injectUpdateGameState(UpdateGameState updateGameState);
 	void injectJoinGame(JoinGame joinGame);
 	void injectGetFinalGameResults(GetFinalGameResults getFinalGameResults);
+	void injectCancelGame(CancelGame cancelGame);
 	void injectPing(Ping ping);
 }

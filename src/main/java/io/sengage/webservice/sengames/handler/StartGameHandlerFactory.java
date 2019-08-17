@@ -9,7 +9,9 @@ import io.sengage.webservice.sf.StepFunctionTaskExecutor;
 import io.sengage.webservice.twitch.TwitchClient;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class StartGameHandlerFactory {
 	private final GameDataProvider gameDataProvider;
 	private final PlayerDataProvider playerDataProvider;

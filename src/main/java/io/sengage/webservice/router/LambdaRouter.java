@@ -5,10 +5,12 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import lombok.extern.log4j.Log4j2;
 import io.sengage.webservice.function.BaseLambda;
 import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
 
+@Log4j2
 public class LambdaRouter {
 	Map<String, Resource> routeMap = new LinkedHashMap<>();
 	
@@ -34,7 +36,8 @@ public class LambdaRouter {
 							(BaseLambda<ServerlessInput, ServerlessOutput>) clazz.newInstance();
 					return Optional.of(activity);
 				} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-					e.printStackTrace();
+					log.warn("Caught exception while trying to find matching resource with path {} and method {}", 
+							requestPath, requestMethod, e);
 					return Optional.empty();
 				}
 

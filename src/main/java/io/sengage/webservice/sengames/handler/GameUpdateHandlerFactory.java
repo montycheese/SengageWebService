@@ -1,6 +1,7 @@
 package io.sengage.webservice.sengames.handler;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
 import com.google.gson.Gson;
@@ -12,6 +13,7 @@ import io.sengage.webservice.sengames.handler.flappybird.FlappyBirdGameUpdateHan
 import io.sengage.webservice.sengames.handler.singlestroke.SingleStrokeGameUpdateHandler;
 import io.sengage.webservice.twitch.TwitchClient;
 
+@Singleton
 public class GameUpdateHandlerFactory {
 	
 	private final PlayerDataProvider playerDataProvider;

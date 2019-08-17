@@ -32,4 +32,14 @@ public final class AuthorizationHelper {
 		
 		throw new UnauthorizedActionException("Only the broadcaster or moderator can create a game");
 	}
+	
+	public DecodedJWT authenticateCancelGameRequest(String token) {
+		DecodedJWT jwt =  authenticateRequestAndVerifyToken(token);
+	
+		if (TwitchRole.BROADCASTER.equals(TwitchRole.from(TwitchJWTField.ROLE.fromJWT(jwt)))) {
+			return jwt;
+		}
+		
+		throw new UnauthorizedActionException("Only the broadcaster or moderator can create a game");
+	}
 }

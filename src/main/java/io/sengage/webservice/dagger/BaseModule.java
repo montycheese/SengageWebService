@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
+import io.sengage.webservice.function.CancelGame;
 import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
@@ -68,8 +69,12 @@ public class BaseModule {
 					.className(GetFinalGameResults.class.getName())
 					.httpMethod("GET")
     				.pattern(Pattern.compile("^/game/(.*?)\\/results$"))
-					.build()
-					);
+					.build())
+			.registerActivity(Resource.builder()
+					.className(CancelGame.class.getName())
+					.httpMethod("POST")
+					.pattern(Pattern.compile("^/game/(.*?)\\/cancel$"))
+					.build());
 	}
 	
 	@Provides

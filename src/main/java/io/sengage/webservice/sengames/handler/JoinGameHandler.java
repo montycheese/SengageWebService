@@ -3,6 +3,7 @@ package io.sengage.webservice.sengames.handler;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import io.sengage.webservice.exception.ItemAlreadyExistsException;
 import io.sengage.webservice.model.GameItem;
@@ -13,6 +14,7 @@ import io.sengage.webservice.model.StreamContext;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.persistence.PlayerDataProvider;
 
+@Singleton
 public class JoinGameHandler {
 	
 	private final PlayerDataProvider playerDataProvider;
