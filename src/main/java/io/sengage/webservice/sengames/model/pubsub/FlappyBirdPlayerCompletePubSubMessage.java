@@ -22,6 +22,7 @@ public class FlappyBirdPlayerCompletePubSubMessage implements PubSubGameMessage 
 	private String userName;
 	private GameCharacter character;
 	private int playersRemaining;
+	private String idempotencyToken;
 	@Builder.Default
 	private final ViewAction action = ViewAction.KILL_FEED; 
 }

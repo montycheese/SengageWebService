@@ -18,5 +18,6 @@ public class EndGameMessage implements PubSubGameMessage {
 	private String gameId;
 	private Game game;
 	private GameStatus gameStatus;
+	private String idempotencyToken;
 
 }

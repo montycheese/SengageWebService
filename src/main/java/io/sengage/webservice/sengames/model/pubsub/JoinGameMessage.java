@@ -1,6 +1,7 @@
 package io.sengage.webservice.sengames.model.pubsub;
 
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem;
@@ -26,6 +27,7 @@ public class JoinGameMessage implements PubSubGameMessage {
 	private int gameDuration;
 	private long gameStartTimeEpochMilli;
 	private long gameEndTimeEpochMilli;
+    private String idempotencyToken;
 	
 	public static JoinGameMessage from(GameItem gameItem) {
 		int waitDuration = GameToWaitForPlayersToJoinDurationMapper.get(gameItem.getGame());
@@ -37,6 +39,7 @@ public class JoinGameMessage implements PubSubGameMessage {
 				.gameEndTimeEpochMilli(gameItem.getCreatedAt().plus(gameItem.getDuration(), ChronoUnit.SECONDS).toEpochMilli())
 				.gameStartTimeEpochMilli(gameItem.getCreatedAt().plus(waitDuration, ChronoUnit.SECONDS).toEpochMilli())
 				.waitDuration(waitDuration)
+				.idempotencyToken(UUID.randomUUID().toString())
 				.build();
 	}
 }

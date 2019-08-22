@@ -9,6 +9,7 @@ import io.sengage.webservice.model.GameSpecificState;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SendFlightResultRequest implements GameSpecificState {
-	public static final String type = "SendFlightResultRequest"; // Required for GSON to deserialze
+	public static final String typeName = "SendFlightResultRequest";
+	public final String type = typeName; // Required for GSON to deserialze
 	private FlightResult flightResult;
 }

@@ -21,7 +21,9 @@ import io.sengage.webservice.persistence.PlayerDataProvider;
 import io.sengage.webservice.sengames.handler.GameUpdateHandler;
 import io.sengage.webservice.sengames.model.HandleGameUpdateResponse;
 import io.sengage.webservice.sengames.model.flappybird.FlappyBirdGameUpdateResponse;
+import io.sengage.webservice.sengames.model.flappybird.ResurrectUserRequest;
 import io.sengage.webservice.sengames.model.flappybird.SendFlightResultRequest;
+import io.sengage.webservice.sengames.model.pubsub.ViewAction;
 import io.sengage.webservice.twitch.FlappyBirdPlayerCompleteRequest;
 import io.sengage.webservice.twitch.PlayerCompleteRequest;
 import io.sengage.webservice.twitch.TwitchClient;
@@ -48,7 +50,7 @@ public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 	public HandleGameUpdateResponse handleGameUpdate(String gameId,
 			GameSpecificState state, StreamContext streamContext)
 			throws GameCompletedException {
-		SendFlightResultRequest request = (SendFlightResultRequest) state;
+
 		// make sure game is still accepting requests
 		Optional<GameItem> optionalGame = gameDataProvider.getGame(gameId);
 		GameItem game = optionalGame.orElseThrow(() -> new RuntimeException("Could not find game with id: " + gameId));
@@ -61,54 +63,78 @@ public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 		
 		Player player;
 		try {
-			player = playerDataProvider.getPlayer(gameId, streamContext.getOpaqueId());
+			player = playerDataProvider.getPlayer(gameId, streamContext.getOpaqueId(), FlappyBirdPlayer.class);
 		} catch (ItemNotFoundException e) {
 			throw new RuntimeException("Could not find player in game", e);
 		}
 		
-		// TODO since we want to let people submit more than once maybe remove this line of code.
-		if (!player.getPlayerStatus().equals(PlayerStatus.PLAYING)) {
-			throw new RuntimeException("Player already submitted a flight " + player.getOpaqueId());
+		boolean isResurrectingPlayer = isResurrectingPlayer(state);
+		if (isResurrectingPlayer) {
+			if (PlayerStatus.PLAYING.equals(player.getPlayerStatus())) {
+				// You cannot revive a player that is currently playing. Maybe the previous call to submit the last flight failed.
+				// For now warn on the issue but allow the player to keep playing.
+				log.warn("Received resurrect request for player {} in game {} but"
+						+ " player is currently alive in data store. Assuming previous call to update state failed."
+						, player.getOpaqueId(), gameId);
+			}
+			
+			log.debug("Resurrecting player {} ", player.getOpaqueId());
+			player.setPlayerStatus(PlayerStatus.PLAYING);
+		} else {
+			// TODO if we want to let people submit more than once in the same session remove this line of code.
+			if (!player.getPlayerStatus().equals(PlayerStatus.PLAYING)) {
+				throw new RuntimeException("Player already submitted a flight " + player.getOpaqueId());
+			}
+			SendFlightResultRequest request = (SendFlightResultRequest) state;
+
+			player = new FlappyBirdPlayer(
+					player.getGameId(),
+					player.getOpaqueId(),
+					player.getUserId(),
+					player.getUserName(),
+					player.getJoinedAt(),
+					player.getModifiedAt(),
+					PlayerStatus.COMPLETED,
+					request.getFlightResult().getCharacter(),
+					request.getFlightResult().getDistance(),
+					request.getFlightResult().getAttempt()
+			);
+			
 		}
-		// TODO handle case where player submit more than 1 attempt and save highest scoring attempt
-		player = new FlappyBirdPlayer(
-				player.getGameId(),
-				player.getOpaqueId(),
-				player.getUserId(),
-				player.getUserName(),
-				player.getJoinedAt(),
-				player.getModifiedAt(),
-				PlayerStatus.COMPLETED,
-				request.getFlightResult().getCharacter(),
-				request.getFlightResult().getDistance(),
-				request.getFlightResult().getAttempt()
-		);
 		
+
 		try {
 			playerDataProvider.updateGamePlayer(player);
 		} catch (ItemNotFoundException e) {
-			throw new RuntimeException("Could not find player in game to update: " + gameId, e);
+			throw new IllegalStateException("Could not find player in game to update: " + gameId, e);
 		}
-		
-		// if last player send end game notification.
+
 		int playersRemaining = 
 				playerDataProvider.getNumberOfPlayersInGame(gameId, PlayerStatus.PLAYING);
 		
 		// we don't want the game to end if a player joins and submits the flight before any other player has the chance
 		// to join the game
-		if (playersRemaining <= 0 && GameStatus.IN_PROGRESS.equals(game.getGameStatus())) {
-			log.debug("All players are finished, creating CWE event.");
+		if (playersRemaining <= 0 && GameStatus.IN_PROGRESS.equals(game.getGameStatus()) && !isResurrectingPlayer) {
+			// if last player send end game notification.
+			log.debug("All players of game {} are finished, creating CWE event.", gameId);
 			notifyAllPlayersAreFinished(game);
 		} else {
+			ViewAction viewAction = isResurrectingPlayer ? ViewAction.REVIVE : ViewAction.KILL_FEED;
 			PlayerCompleteRequest playerCompleteRequest = FlappyBirdPlayerCompleteRequest.builder()
 					.gameItem(game)
 					.player((FlappyBirdPlayer) player)
 					.playersRemaining(playersRemaining)
 					.channelId(game.getChannelId())
-					.build();					
+					.viewAction(viewAction)
+					.build();
 			twitchClient.notifyChannelPlayerComplete(playerCompleteRequest);
 		}
+	
 		return new FlappyBirdGameUpdateResponse();
+	}
+	
+	private boolean isResurrectingPlayer(GameSpecificState state) {
+		return ResurrectUserRequest.typeName.equals(state.getType());
 	}
 
 }

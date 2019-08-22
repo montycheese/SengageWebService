@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SendLineRequest implements SingleStrokeGameSpecificState {
-	public static final String type = "SendLineRequest"; // Required for GSON to deserialze
+	public static final String typeName = "SendLineRequest";
+	public final String type = typeName; // Required for GSON to deserialze
 	private Stroke stroke;
 }

@@ -5,6 +5,7 @@ import io.sengage.webservice.model.GameStatus;
 
 public interface PubSubGameMessage {
 
+	String getIdempotencyToken();
 	String getGameId();
 	Game getGame();
 	GameStatus getGameStatus();

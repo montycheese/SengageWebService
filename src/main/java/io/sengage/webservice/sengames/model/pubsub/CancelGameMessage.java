@@ -18,5 +18,6 @@ public class CancelGameMessage implements PubSubGameMessage {
 	private Game game;
 	private GameStatus gameStatus;
 	private GameCancellationReason cancellationReason;
+	private String idempotencyToken;
 	
 }

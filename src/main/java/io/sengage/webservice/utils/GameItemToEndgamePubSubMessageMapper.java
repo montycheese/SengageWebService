@@ -1,5 +1,7 @@
 package io.sengage.webservice.utils;
 
+import java.util.UUID;
+
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.sengames.model.pubsub.EndGameMessage;
 import io.sengage.webservice.sengames.model.pubsub.SingleStrokeEndGameMessage;
@@ -24,6 +26,7 @@ public final class GameItemToEndgamePubSubMessageMapper {
 						.game(gameItem.getGame())
 						.gameId(gameItem.getGameId())
 						.gameStatus(gameItem.getGameStatus())
+						.idempotencyToken(UUID.randomUUID().toString())
 						.build();
 			default:
 				throw new IllegalArgumentException("Unsupported game: " + gameItem.getGame());

@@ -30,7 +30,12 @@ public class DynamoDBPlayerDataProvider implements PlayerDataProvider {
 	
 	@Override
 	public Player getPlayer(String gameId, String opaqueUserId) throws ItemNotFoundException {
-		Player player =  mapper.load(Player.class, gameId, opaqueUserId);
+		return getPlayer(gameId, opaqueUserId, Player.class);
+	}
+	
+	@Override
+	public Player getPlayer(String gameId, String opaqueUserId, Class<? extends Player> clazz) throws ItemNotFoundException {
+		Player player =  mapper.load(clazz, gameId, opaqueUserId);
 		if (player == null) {
 			throw new ItemNotFoundException("Could not find player: " + opaqueUserId + " in game: " + gameId);
 		}

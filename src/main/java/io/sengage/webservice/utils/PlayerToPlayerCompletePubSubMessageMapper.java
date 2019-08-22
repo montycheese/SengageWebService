@@ -1,5 +1,7 @@
 package io.sengage.webservice.utils;
 
+import java.util.UUID;
+
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.flappybird.FlappyBirdPlayer;
 import io.sengage.webservice.sengames.model.pubsub.FlappyBirdPlayerCompletePubSubMessage;
@@ -24,6 +26,8 @@ public class PlayerToPlayerCompletePubSubMessageMapper {
 					.opaqueId(fbPlayer.getOpaqueId())
 					.userName(fbPlayer.getUserName())
 					.playersRemaining(fbRequest.getPlayersRemaining())
+					.action(fbRequest.getViewAction())
+					.idempotencyToken(UUID.randomUUID().toString())
 					.build();
 		case SINGLE_STROKE:
 		default:

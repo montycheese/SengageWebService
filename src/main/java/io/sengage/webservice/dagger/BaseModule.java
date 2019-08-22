@@ -26,6 +26,7 @@ import io.sengage.webservice.model.singlestroke.SingleStrokeEndGameResult;
 import io.sengage.webservice.router.LambdaRouter;
 import io.sengage.webservice.router.Resource;
 import io.sengage.webservice.sengames.model.flappybird.CreateFlappyBirdGameParameters;
+import io.sengage.webservice.sengames.model.flappybird.ResurrectUserRequest;
 import io.sengage.webservice.sengames.model.flappybird.SendFlightResultRequest;
 import io.sengage.webservice.sengames.model.singlestroke.CreateSingleStrokeGameParameters;
 import io.sengage.webservice.sengames.model.singlestroke.SendLineRequest;
@@ -107,8 +108,9 @@ public class BaseModule {
 	static TypeAdapterFactory provideGameSpecificStateRuntimeAdapterFactory() {
 		return RuntimeTypeAdapterFactory
 				.of(GameSpecificState.class, "type")
-				.registerSubtype(SendLineRequest.class, SendLineRequest.type)
-				.registerSubtype(SendFlightResultRequest.class, SendFlightResultRequest.type);
+				.registerSubtype(SendLineRequest.class, SendLineRequest.typeName)
+				.registerSubtype(SendFlightResultRequest.class, SendFlightResultRequest.typeName)
+				.registerSubtype(ResurrectUserRequest.class, ResurrectUserRequest.typeName);
 	}
 	
 	@Provides

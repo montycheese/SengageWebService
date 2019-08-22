@@ -11,6 +11,8 @@ public interface PlayerDataProvider {
 
 	Player getPlayer(String gameId, String opaqueUserId) throws ItemNotFoundException;
 	
+	Player getPlayer(String gameId, String opaqueUserId, Class<? extends Player> clazz) throws ItemNotFoundException;
+	
 	public void createPlayer(Player player) throws ItemAlreadyExistsException;
 	
 	public void updateGamePlayer(Player player) throws ItemNotFoundException;
