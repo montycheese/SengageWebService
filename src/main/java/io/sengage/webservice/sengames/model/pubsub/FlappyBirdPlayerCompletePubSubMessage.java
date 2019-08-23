@@ -2,7 +2,6 @@ package io.sengage.webservice.sengames.model.pubsub;
 
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameStatus;
-import io.sengage.webservice.sengames.model.flappybird.GameCharacter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,8 +19,9 @@ public class FlappyBirdPlayerCompletePubSubMessage implements PubSubGameMessage 
 	private String gameId;
 	private String opaqueId;
 	private String userName;
-	private GameCharacter character;
+	private String character;
 	private int playersRemaining;
+	private long gameEndTimeEpochMilli;
 	private String idempotencyToken;
 	@Builder.Default
 	private final ViewAction action = ViewAction.KILL_FEED; 

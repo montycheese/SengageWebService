@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class FlightResult {
 	
-	private GameCharacter character;
+	private String character;
 	private long distance;
 	private String userName;
 	private String opaqueId;

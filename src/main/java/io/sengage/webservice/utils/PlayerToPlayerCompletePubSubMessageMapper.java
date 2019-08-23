@@ -28,6 +28,7 @@ public class PlayerToPlayerCompletePubSubMessageMapper {
 					.playersRemaining(fbRequest.getPlayersRemaining())
 					.action(fbRequest.getViewAction())
 					.idempotencyToken(UUID.randomUUID().toString())
+					.gameEndTimeEpochMilli(gameItem.getCompletesAt().toEpochMilli())
 					.build();
 		case SINGLE_STROKE:
 		default:

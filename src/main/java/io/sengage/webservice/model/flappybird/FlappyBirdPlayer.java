@@ -8,19 +8,16 @@ import lombok.NoArgsConstructor;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBIgnore;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
 
 import io.sengage.webservice.model.Player;
 import io.sengage.webservice.model.PlayerStatus;
-import io.sengage.webservice.sengames.model.flappybird.GameCharacter;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @DynamoDBTable(tableName = Player.TABLE_NAME)
 public class FlappyBirdPlayer extends Player {
-	@DynamoDBTypeConvertedEnum
-	private GameCharacter character;
+	private String character;
 	private int attempt;
 	
 	public FlappyBirdPlayer(
@@ -31,7 +28,7 @@ public class FlappyBirdPlayer extends Player {
 			Instant joinedAt,
 			Instant modifiedAt,
 			PlayerStatus playerStatus,
-			GameCharacter character,
+			String character,
 			long distance,
 			int attempt
 			) {

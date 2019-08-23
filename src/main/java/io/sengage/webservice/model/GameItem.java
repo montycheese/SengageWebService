@@ -3,6 +3,7 @@ package io.sengage.webservice.model;
 import io.sengage.webservice.persistence.converters.InstantConverter;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,6 +104,11 @@ public class GameItem {
 		}
 		
 		return arns;
+	}
+	
+	@DynamoDBIgnore
+	public Instant getCompletesAt() {
+		return getCreatedAt().plus(getDuration(), ChronoUnit.SECONDS);
 	}
 	
 	@Data
