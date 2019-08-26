@@ -45,16 +45,15 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 			GameSpecificParameters parameters, int duration,
 			StreamContext streamContext) {
 		
-		// TODO: currently disabled for testing purposes
-		/* see if game already is being played on the channel
-		// ignore games that are more than 30 min old to avoid leaked games from screwing with the number 
-		Instant timeWindowToIgnore = Instant.now().minus(30, ChronoUnit.MINUTES);
+		// see if game already is being played on the channel
+		// ignore games that are more than 11 min old to avoid leaked games from screwing with the number 
+		Instant timeWindowToIgnore = Instant.now().minus(11, ChronoUnit.MINUTES);
 		int numGamesInProgress = gameDataProvider.getNumberOfGamesWithStatuses(streamContext.getChannelId(), GAME_IN_PROGRESS_STATUSES, timeWindowToIgnore);
 		
 		if (numGamesInProgress > 0) {
 			log.warn("{} game(s) already in progress. Cannot create new game for channel {}", numGamesInProgress, streamContext.getChannelId());
 			throw new GameInProgressException("Cannot start new game because one is currently in progress");
-		}*/
+		}
 		
 		// create game persistence object
 		GameItem item = GameItem.from(game, parameters, duration, streamContext);
@@ -69,12 +68,13 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 		try {
 			twitchClient.notifyChannelJoinGame(item);	
 		} catch (Exception e) {
+			log.warn("Failed to notify channel to join game due to {}", e);
 			item.setGameStatus(GameStatus.ERROR_STATE);
 			item.setStatusReason("Failed to notify players of game start due to: " + e.getMessage());
 			try {
 				gameDataProvider.updateGame(item);
 			} catch (ItemVersionMismatchException e1) {
-				e1.printStackTrace();
+				log.warn("Failed to update dynamo for game {}. {}", item.getGameId(), e1);
 			}
 			throw e;
 		}
@@ -84,8 +84,7 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 			String message = String.format(Constants.GAME_START_MESSAGE_FORMAT, item.getGame().getFriendlyName(), waitDuration);
 			twitchClient.sendExtensionChatMessage(item.getChannelId(), message);
 		} catch (Exception e) {
-			e.printStackTrace();
-			// OK to swallow this.
+			log.warn("Failed to send extension chat message to channel {}", streamContext.getChannelId());
 		}
 		
 		
@@ -94,7 +93,7 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 		try {
 			gameDataProvider.updateGame(item);
 		} catch (ItemVersionMismatchException e) {
-			System.out.println("Item version mismatch while trying to update game: " + item.getGameId());
+			log.warn("Item version mismatch while trying to update game: {}. {}" + item.getGameId(), e);
 			// have a event or error path that gracefully fails a game if it encounters error state
 			item = gameDataProvider.getGame(item.getGameId()).get();
 			item.setGameStatus(GameStatus.ERROR_STATE);
