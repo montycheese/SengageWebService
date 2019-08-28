@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum Game {
 	SINGLE_STROKE("Paint Party"),
-	FLAPPY_BIRD_BR("Flappy Bird Battle Royale")
+	FLAPPY_BIRD_BR("FlightMania")
 	;
 	
 	private String friendlyName;
