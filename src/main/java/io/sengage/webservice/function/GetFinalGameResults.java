@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.apache.http.HttpStatus;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -35,10 +37,13 @@ import io.sengage.webservice.sengames.model.singlestroke.Stroke;
 import io.sengage.webservice.sengames.model.singlestroke.StrokeType;
 import io.sengage.webservice.utils.GameToPlayerClassMapper;
 
+@Log4j2
 public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessOutput>{
 
 	
 	private static final double MULTIPLIER = 250.0;
+	private static final int numRetries = 5;
+	private static final int waitDurationMilli = 1000;
 	
 	@Inject
 	Gson gson;
@@ -69,12 +74,26 @@ public class GetFinalGameResults extends BaseLambda<ServerlessInput, ServerlessO
 		
 		String gameId = getPathParameter(serverlessInput.getPath(), PathParameter.GAME_ID);
 		
-		GameItem gameItem = gameDataProvider.getGame(gameId).get();
+		GameItem gameItem;
+		int retries = 0;
+		do{
+			gameItem = gameDataProvider.getGame(gameId).get();
+			
+			if (gameItem.getGameStatus().isOnOrAfter(GameStatus.COMPLETED)) {
+				break;
+			} else {
+				try {
+					log.warn("Expected game status to be on or after Completed. Actual status: {}, Retrying in {} milliseconds", gameItem.getGameStatus(), waitDurationMilli);
+					Thread.sleep(waitDurationMilli);
+				} catch (InterruptedException e) {
+					log.error("Thread interrupted while retrying..., {}", e);
+				}
+			}
+		} while (retries++ < numRetries);
 		
 		if (gameItem.getGameStatus().isBefore(GameStatus.COMPLETED)) {
 			throw new IllegalStateException("Game is not yet complete: " + gameId);
-		}
-		
+		} 
 		//TODO: ensure player belongs to game.
 		
 		List<? extends Player> playerDatum = playerDataProvider.listPlayersByScore(gameId, GameToPlayerClassMapper.get(gameItem.getGame()));
