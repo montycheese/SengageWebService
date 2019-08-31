@@ -8,6 +8,8 @@ import io.sengage.webservice.model.ServerlessInput;
 import io.sengage.webservice.model.ServerlessOutput;
 import io.sengage.webservice.router.LambdaRouter;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.NoSuchElementException;
 
 import javax.inject.Inject;
@@ -42,8 +44,12 @@ public final class RequestHandler extends BaseLambda<ServerlessInput, Serverless
 		ServerlessOutput output = new ServerlessOutput();
 		
 		try {
+			Instant before = Instant.now();
 			BaseLambda<ServerlessInput, ServerlessOutput> activity = 
 					router.getMatchingActivity(serverlessInput.getPath(), serverlessInput.getHttpMethod()).get();
+			Instant after = Instant.now();
+			long timeElapsed = Duration.between(before, after).toMillis();
+			log.debug("RequestHandler#handleRequest(): Time to initalize activity: {} milliseconds", timeElapsed);
 			log.info("RequestHandler#handleRequest(): Routing request at path " + serverlessInput.getPath() +
 					" with method: " + serverlessInput.getHttpMethod() + " to activity: " + activity.getClass().getName());
 			output = activity.handleRequest(serverlessInput,  context);

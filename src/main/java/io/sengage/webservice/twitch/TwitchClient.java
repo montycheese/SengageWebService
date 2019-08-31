@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpBackOffUnsuccessfulResponseHandler;
@@ -36,6 +37,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.gson.Gson;
 
+@Singleton
 public final class TwitchClient {
 	
 	private static final String TWITCH_API_BASE_URL = "https://api.twitch.tv";

@@ -4,6 +4,7 @@ import io.sengage.webservice.dagger.DaggerTaskComponent;
 import io.sengage.webservice.dagger.TaskComponent;
 import io.sengage.webservice.events.EventDetail;
 import io.sengage.webservice.model.Game;
+import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.sengames.handler.EndGameHandler;
 import io.sengage.webservice.sengames.handler.EndGameHandlerFactory;
 import io.sengage.webservice.sengames.handler.StartGameHandler;
@@ -19,7 +20,9 @@ import com.amazonaws.services.lambda.runtime.Context;
 @Log4j2
 public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 
-
+	@Inject
+	GameDataProvider gameDataProvider;
+	
 	@Inject
 	StartGameHandlerFactory startGameHandlerFactory;
 	
@@ -37,6 +40,8 @@ public class GameTaskHandler extends BaseLambda<GameContextInput, Void> {
 		
 		EventDetail detailType = input.getEventDetail();
 		if (EventDetail.PING.equals(detailType)) {
+			// HACKY WAY TO REDUCE DDB COLD START FOR NOW.
+			gameDataProvider.getGame("046ef9ae-ea3d-419c-adf1-0897981aed8f");
 			return null;
 		}
 		

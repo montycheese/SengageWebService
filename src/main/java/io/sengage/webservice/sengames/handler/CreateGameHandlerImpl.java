@@ -44,12 +44,10 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 	public String handleCreateGame(Game game,
 			GameSpecificParameters parameters, int duration,
 			StreamContext streamContext) {
-		
 		// see if game already is being played on the channel
-		// ignore games that are more than 11 min old to avoid leaked games from screwing with the number 
+		// ignore games that are more than 11 min old to avoid leaked games from screwing with the number
 		Instant timeWindowToIgnore = Instant.now().minus(11, ChronoUnit.MINUTES);
 		int numGamesInProgress = gameDataProvider.getNumberOfGamesWithStatuses(streamContext.getChannelId(), GAME_IN_PROGRESS_STATUSES, timeWindowToIgnore);
-		
 		if (numGamesInProgress > 0) {
 			log.warn("{} game(s) already in progress. Cannot create new game for channel {}", numGamesInProgress, streamContext.getChannelId());
 			throw new GameInProgressException("Cannot start new game because one is currently in progress");

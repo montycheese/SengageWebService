@@ -8,6 +8,7 @@ import io.sengage.webservice.dagger.TaskComponent;
 import io.sengage.webservice.function.BaseLambda;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.model.GameItem.GameItemDigest;
+import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.sengames.handler.EndGameHandler;
 import io.sengage.webservice.sengames.handler.EndGameHandlerFactory;
 import io.sengage.webservice.sengames.handler.StartGameHandler;
@@ -19,7 +20,9 @@ import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 @Log4j2
 public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 
-
+	@Inject
+	GameDataProvider gameDataProvider;
+	
 	@Inject
 	StartGameHandlerFactory startGameHandlerFactory;
 	
@@ -36,7 +39,16 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 	public Void handleRequest(ScheduledEvent event, Context context) {
 		log.info("handleEvent(): input: " + event);
 		
-		EventDetail detailType = EventDetail.valueOf(event.getDetailType());
+		EventDetail detailType;
+		try {
+			detailType = EventDetail.valueOf(event.getDetailType());
+		} catch (NullPointerException e) {
+			log.debug("Probably catching the ping. Returning.");
+			// HACKY WAY TO REDUCE DDB COLD START FOR NOW.
+			gameDataProvider.getGame("046ef9ae-ea3d-419c-adf1-0897981aed8f");
+			return null;
+		}
+		
 		if (EventDetail.PING.equals(detailType)) {
 			return null;
 		}
@@ -63,7 +75,6 @@ public class CWEventsHandler extends BaseLambda<ScheduledEvent, Void> {
 			throw new IllegalArgumentException("Unsupported event detail: " + detailType);
 		
 		}
-		
 		return null;
 	}
 }

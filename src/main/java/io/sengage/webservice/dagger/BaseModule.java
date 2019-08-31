@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsyncClientBuilder;
 import com.google.gson.Gson;
@@ -126,6 +127,9 @@ public class BaseModule {
 	@Provides
 	@Singleton
 	static AmazonCloudWatchEventsAsync provideAmazonCloudWatchEventsAsync() {
-		return AmazonCloudWatchEventsAsyncClientBuilder.defaultClient();
+		return AmazonCloudWatchEventsAsyncClientBuilder
+				.standard()
+				.withCredentials(new EnvironmentVariableCredentialsProvider())
+				.build();
 	}
 }

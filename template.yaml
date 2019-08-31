@@ -44,14 +44,14 @@ Resources:
       FunctionName: !Join ["", [!Ref DeploymentStage, "-", "SengageWSLambdaFunction"]]
       Runtime: java8
       Timeout: 120
-      MemorySize: 320
+      MemorySize: 512
       Role: !GetAtt DefaultLambdaInvocationRole.Arn
       CodeUri: ./target/webservice-1.0.0.jar
       Events:
         Canary:
           Type: Schedule
           Properties:
-              Schedule: rate(60 minutes)
+              Schedule: rate(30 minutes)
               Input: "{ \"httpMethod\": \"GET\", \"path\": \"/ping\" }"
       #Events:
       #  SengageWSWebService:
@@ -74,7 +74,7 @@ Resources:
         Canary:
           Type: Schedule
           Properties:
-              Schedule: rate(60 minutes)
+              Schedule: rate(30 minutes)
               Input: "{ \"detailType\": \"PING\"}"
   SengamesGameTaskHandlerLambdaFunction:
     Type: 'AWS::Serverless::Function'
@@ -90,7 +90,7 @@ Resources:
         Canary:
           Type: Schedule
           Properties:
-              Schedule: rate(60 minutes)
+              Schedule: rate(30 minutes)
               Input: "{ \"eventDetail\": \"PING\"}"
 
           

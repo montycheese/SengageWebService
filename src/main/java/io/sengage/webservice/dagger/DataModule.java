@@ -7,6 +7,7 @@ import io.sengage.webservice.persistence.ddb.DynamoDBPlayerDataProvider;
 
 import javax.inject.Singleton;
 
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -38,7 +39,9 @@ public class DataModule {
 	@Provides
 	@Singleton
 	static AmazonDynamoDB provideDDB() {
-		return AmazonDynamoDBClientBuilder.defaultClient();
+		return AmazonDynamoDBClientBuilder.standard()
+		.withCredentials(new EnvironmentVariableCredentialsProvider())
+		.build();
 	}
 	
 }

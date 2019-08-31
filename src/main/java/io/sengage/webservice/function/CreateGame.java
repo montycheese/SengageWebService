@@ -2,6 +2,8 @@ package io.sengage.webservice.function;
 
 import javax.inject.Inject;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.apache.http.HttpStatus;
 
 import io.sengage.webservice.auth.AuthorizationHelper;
@@ -21,6 +23,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 
+@Log4j2
 public class CreateGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 	 
 	@Inject
@@ -32,8 +35,6 @@ public class CreateGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 	@Inject
 	AuthorizationHelper authHelper;
 	
-	private LambdaLogger logger;
-	
 	public CreateGame() {
 		ExtensionComponent component = DaggerExtensionComponent.create();
 		component.injectCreateGame(this);
@@ -41,8 +42,7 @@ public class CreateGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 	
 	@Override
 	public ServerlessOutput handleRequest(ServerlessInput serverlessInput, Context context) {
-		logger = context.getLogger();
-		logger.log("Request: " + serverlessInput.getBody());
+		log.info("Request: " + serverlessInput.getBody());
 		
 		DecodedJWT jwt = authHelper.authenticateCreateGameRequest(parseAuthTokenFromHeaders(serverlessInput.getHeaders()));
 		
@@ -51,7 +51,7 @@ public class CreateGame extends BaseLambda<ServerlessInput, ServerlessOutput> {
 		CreateGameHandler handler = createGameHandlerFactory.get(request.getGame());
 		
 		StreamContext streamContext = JwtUtils.getStreamContext(jwt);
-		
+		log.debug("About to handle create game");
 		String gameId = handler.handleCreateGame(request.getGame(), 
 				request.getGameSpecificParameters(),
 				request.getDuration(), 

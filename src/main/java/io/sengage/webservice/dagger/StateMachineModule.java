@@ -3,6 +3,7 @@ package io.sengage.webservice.dagger;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsAsync;
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsAsyncClientBuilder;
 
@@ -32,6 +33,9 @@ public class StateMachineModule {
 	@Provides
 	@Singleton
 	static AWSStepFunctionsAsync provideAWSStepFunctionsAsync() {
-		return AWSStepFunctionsAsyncClientBuilder.defaultClient();
+		return AWSStepFunctionsAsyncClientBuilder
+				.standard()
+				.withCredentials(new EnvironmentVariableCredentialsProvider())
+				.build();
 	}
 }
