@@ -18,7 +18,6 @@ import io.sengage.webservice.sengames.handler.CreateGameHandler;
 import io.sengage.webservice.sengames.handler.CreateGameHandlerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
