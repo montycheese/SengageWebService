@@ -43,7 +43,7 @@ public class StartGameHandler {
 		GameItem game = optionalGame.get();
 		
 		if (game.getGameStatus().isOnOrAfter(GameStatus.IN_PROGRESS)) {
-			log.warn(String.format("Game status is already: %s, skipping update", GameStatus.IN_PROGRESS.name()));
+			log.warn("Game status is already: {}, which is on or after {} skipping update", game.getGameStatus(), GameStatus.IN_PROGRESS.name());
 			return;
 		}
 		
