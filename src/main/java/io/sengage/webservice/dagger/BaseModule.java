@@ -9,6 +9,8 @@ import javax.inject.Singleton;
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsyncClientBuilder;
+import com.amazonaws.services.lambda.AWSLambdaAsync;
+import com.amazonaws.services.lambda.AWSLambdaAsyncClientBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
@@ -17,6 +19,7 @@ import io.sengage.webservice.function.CancelGame;
 import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
+import io.sengage.webservice.function.KeepWarm;
 import io.sengage.webservice.function.Ping;
 import io.sengage.webservice.function.UpdateGameState;
 import io.sengage.webservice.model.EndGameResult;
@@ -42,6 +45,7 @@ public class BaseModule {
 	public static final String CREATE_GAME_REQUEST_LABEL = "CreateGameRequest";
 	public static final String GAME_SPECIFIC_STATE_LABEL = "GameSpecificState";
 	public static final String END_GAME_RESULT_LABEL = "EndGameResult";
+	public static final String SENGAGE_WS_LAMBDA_ARN = "SengageWSLambdaArn";
 	
 	@Provides
 	@Singleton
@@ -51,6 +55,11 @@ public class BaseModule {
 					.className(Ping.class.getName())
 					.httpMethod("GET")
 					.pattern(Pattern.compile("^/ping$"))
+					.build())
+			.registerActivity(Resource.builder()
+					.className(KeepWarm.class.getName())
+					.httpMethod("GET")
+					.pattern(Pattern.compile("^/keepWarm$"))
 					.build())
 			.registerActivity(Resource.builder()
 					.className(CreateGame.class.getName())
@@ -131,5 +140,21 @@ public class BaseModule {
 				.standard()
 				.withCredentials(new EnvironmentVariableCredentialsProvider())
 				.build();
+	}
+	
+	@Provides
+	@Singleton
+	static AWSLambdaAsync provideAWSLambdaAsync() {
+		return AWSLambdaAsyncClientBuilder
+				.standard()
+				.withCredentials(new EnvironmentVariableCredentialsProvider())
+				.build();
+	}
+	
+	@Provides
+	@Singleton
+	@Named(SENGAGE_WS_LAMBDA_ARN)
+	static String provideSengageWSLambdaFunctionName() {
+		return System.getenv(SENGAGE_WS_LAMBDA_ARN);
 	}
 }

@@ -26,6 +26,10 @@ sam package --template-file template.yaml --s3-bucket deployment-us-east-1-lambd
 
 sam deploy --template-file ./${STAGE}-packaged.yaml --stack-name ${STAGE}-sengage-webservice --capabilities CAPABILITY_NAMED_IAM --parameter-overrides DeploymentStage=${STAGE}
 
+
+## Quick Command
+
+export STAGE=Beta && mvn clean && mvn compile && mvn package && sam package --template-file template.yaml --s3-bucket deployment-us-east-1-lambdas-1 --output-template-file ${STAGE}-packaged.yaml && sam deploy --template-file ./${STAGE}-packaged.yaml --stack-name ${STAGE}-sengage-webservice --capabilities CAPABILITY_NAMED_IAM --parameter-overrides DeploymentStage=${STAGE}
 ###
 misc
 mvn install:install-file -DgroupId=com.google.dagger -DartifactId=dagger -Dversion=2.19 -Dpackaging=jar -Dfile=/Users/montanawong/Downloads/dagger-2.19.jar

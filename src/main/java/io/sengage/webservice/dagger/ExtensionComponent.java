@@ -4,6 +4,7 @@ import io.sengage.webservice.function.CancelGame;
 import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
+import io.sengage.webservice.function.KeepWarm;
 import io.sengage.webservice.function.Ping;
 import io.sengage.webservice.function.UpdateGameState;
 
@@ -20,4 +21,5 @@ public interface ExtensionComponent {
 	void injectGetFinalGameResults(GetFinalGameResults getFinalGameResults);
 	void injectCancelGame(CancelGame cancelGame);
 	void injectPing(Ping ping);
+	void injectKeepWarm(KeepWarm keepWarm);
 }
