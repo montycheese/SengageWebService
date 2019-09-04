@@ -53,7 +53,7 @@ Resources:
         Canary:
           Type: Schedule
           Properties:
-              Schedule: rate(15 minutes)
+              Schedule: rate(5 minutes)
               Input: "{ \"httpMethod\": \"GET\", \"path\": \"/ping\" }"
       #Events:
       #  SengageWSWebService:
@@ -76,7 +76,7 @@ Resources:
         Canary:
           Type: Schedule
           Properties:
-              Schedule: rate(15 minutes)
+              Schedule: rate(5 minutes)
               Input: "{ \"detailType\": \"PING\"}"
   SengamesGameTaskHandlerLambdaFunction:
     Type: 'AWS::Serverless::Function'
@@ -92,7 +92,7 @@ Resources:
         Canary:
           Type: Schedule
           Properties:
-              Schedule: rate(15 minutes)
+              Schedule: rate(5 minutes)
               Input: "{ \"eventDetail\": \"PING\"}"
 
           
