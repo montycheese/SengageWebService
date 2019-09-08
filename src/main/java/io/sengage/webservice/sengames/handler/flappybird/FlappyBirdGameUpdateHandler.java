@@ -108,15 +108,21 @@ public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 		} catch (ItemNotFoundException e) {
 			throw new IllegalStateException("Could not find player in game to update: " + gameId, e);
 		}
+		
+		notifyChannelOfActions(game, player, isResurrectingPlayer);
 
+		return new FlappyBirdGameUpdateResponse();
+	}
+	
+	protected void notifyChannelOfActions(GameItem game, Player player, boolean isResurrectingPlayer) {
 		int playersRemaining = 
-				playerDataProvider.getNumberOfPlayersInGame(gameId, PlayerStatus.PLAYING);
+				playerDataProvider.getNumberOfPlayersInGame(game.getGameId(), PlayerStatus.PLAYING);
 		
 		// we don't want the game to end if a player joins and submits the flight before any other player has the chance
 		// to join the game
 		if (playersRemaining <= 0 && GameStatus.IN_PROGRESS.equals(game.getGameStatus()) && !isResurrectingPlayer) {
 			// if last player send end game notification.
-			log.debug("All players of game {} are finished, creating CWE event.", gameId);
+			log.debug("All players of game {} are finished, creating CWE event.", game.getGameId());
 			notifyAllPlayersAreFinished(game);
 		} else {
 			ViewAction viewAction = isResurrectingPlayer ? ViewAction.REVIVE : ViewAction.KILL_FEED;
@@ -129,8 +135,6 @@ public class FlappyBirdGameUpdateHandler extends GameUpdateHandler {
 					.build();
 			twitchClient.notifyChannelPlayerComplete(playerCompleteRequest);
 		}
-	
-		return new FlappyBirdGameUpdateResponse();
 	}
 	
 	private boolean isResurrectingPlayer(GameSpecificState state) {

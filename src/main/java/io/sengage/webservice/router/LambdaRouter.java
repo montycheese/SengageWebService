@@ -1,9 +1,9 @@
 package io.sengage.webservice.router;
 
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import lombok.extern.log4j.Log4j2;
 import io.sengage.webservice.function.BaseLambda;
@@ -12,25 +12,25 @@ import io.sengage.webservice.model.ServerlessOutput;
 
 @Log4j2
 public class LambdaRouter {
-	Map<String, Resource> routeMap = new LinkedHashMap<>();
+	Set<Resource> routes = new HashSet<>();
 	
 	/**
 	 * Register an activity with a method to the router.
 	 * @param resource Class holding the activity, http method, and the path regex
 	 */
 	public LambdaRouter registerActivity(Resource resource) {
-		routeMap.put(resource.getClassName(), resource);
+		routes.add(resource);
 		return this;
 	}
 	
 	public Optional<BaseLambda<ServerlessInput, ServerlessOutput>> getMatchingActivity(
 			String requestPath, String requestMethod) {
 		// find first activity matching pattern.
-		for (Map.Entry<String, Resource> entry: routeMap.entrySet()) {
-			if(entry.getValue().matches(requestPath,  requestMethod)) {
+		for (Resource resource: routes) {
+			if(resource.matches(requestPath,  requestMethod)) {
 				Class<?> clazz;
 				try {
-					clazz = Class.forName(entry.getKey());
+					clazz = Class.forName(resource.getClassName());
 					@SuppressWarnings("unchecked")
 					BaseLambda<ServerlessInput, ServerlessOutput> activity = 
 							(BaseLambda<ServerlessInput, ServerlessOutput>) clazz.newInstance();

@@ -1,6 +1,5 @@
 package io.sengage.webservice.router;
 
-
 import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
@@ -21,4 +20,5 @@ public final class Resource {
 	public boolean matches(String httpPath, String method) {
 		return pattern.matcher(httpPath).find() && method.equalsIgnoreCase(this.httpMethod);
 	}
+
 }

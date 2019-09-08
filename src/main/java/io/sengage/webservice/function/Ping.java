@@ -13,7 +13,6 @@ import org.apache.http.HttpStatus;
 import com.amazonaws.services.lambda.AWSLambdaAsync;
 import com.amazonaws.services.lambda.model.InvocationType;
 import com.amazonaws.services.lambda.model.InvokeRequest;
-import com.amazonaws.services.lambda.model.InvokeResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.google.gson.Gson;
 
@@ -90,7 +89,6 @@ public class Ping extends BaseLambda<Object, ServerlessOutput> {
 			.withPayload(KEEP_WARM_JSON_INPUT)
 			.withInvocationType(InvocationType.Event);
 		IntStream.range(0, getNumConcurrentExecutions()).parallel().forEach(i -> {
-			log.debug("Invoking lambda {}. Iteration {}", sengageWSLambdaArn, i);
 			try {
 				lambdaClient.invoke(request);
 			} catch (Exception e) {

@@ -21,6 +21,7 @@ import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
 import io.sengage.webservice.function.KeepWarm;
 import io.sengage.webservice.function.Ping;
+import io.sengage.webservice.function.QuitGame;
 import io.sengage.webservice.function.UpdateGameState;
 import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.model.GameSpecificParameters;
@@ -70,6 +71,11 @@ public class BaseModule {
 		    		.className(UpdateGameState.class.getName())
 		    		.httpMethod("PUT")
 		    		.pattern(Pattern.compile("^/game/([^\\/]*)$"))
+		    		.build())
+		    .registerActivity(Resource.builder()
+		    		.className(QuitGame.class.getName())
+		    		.httpMethod("POST")
+		    		.pattern(Pattern.compile("^/game/(.*?)\\/quit$"))
 		    		.build())
     		.registerActivity(Resource.builder()
     				.className(JoinGame.class.getName())

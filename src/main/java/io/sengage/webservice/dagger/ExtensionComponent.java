@@ -6,6 +6,7 @@ import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.JoinGame;
 import io.sengage.webservice.function.KeepWarm;
 import io.sengage.webservice.function.Ping;
+import io.sengage.webservice.function.QuitGame;
 import io.sengage.webservice.function.UpdateGameState;
 
 import javax.inject.Singleton;
@@ -20,6 +21,7 @@ public interface ExtensionComponent {
 	void injectJoinGame(JoinGame joinGame);
 	void injectGetFinalGameResults(GetFinalGameResults getFinalGameResults);
 	void injectCancelGame(CancelGame cancelGame);
+	void injectQuitGame(QuitGame quitGame);
 	void injectPing(Ping ping);
 	void injectKeepWarm(KeepWarm keepWarm);
 }
