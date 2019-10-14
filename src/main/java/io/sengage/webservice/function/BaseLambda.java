@@ -15,6 +15,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 public abstract class BaseLambda<I, O> implements RequestHandler<I,O> {
 	
 	protected static final String TOKEN_KEY = "Authorization";
+	protected static final String PLATFORM_KEY = "Platform";
 	private static final String AUTH_TOKEN_PREFIX = "Bearer ";
 	
 	protected Map<String, String> getOutputHeaders() {

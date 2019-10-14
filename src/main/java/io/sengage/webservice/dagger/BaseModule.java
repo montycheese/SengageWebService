@@ -15,17 +15,21 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
+import io.sengage.webservice.balance.TwitchPaymentMetadata;
 import io.sengage.webservice.function.CancelGame;
 import io.sengage.webservice.function.CreateGame;
 import io.sengage.webservice.function.GetFinalGameResults;
+import io.sengage.webservice.function.GetUserBalance;
 import io.sengage.webservice.function.JoinGame;
 import io.sengage.webservice.function.KeepWarm;
 import io.sengage.webservice.function.Ping;
 import io.sengage.webservice.function.QuitGame;
 import io.sengage.webservice.function.UpdateGameState;
+import io.sengage.webservice.function.UpdateUserBalance;
 import io.sengage.webservice.model.EndGameResult;
 import io.sengage.webservice.model.GameSpecificParameters;
 import io.sengage.webservice.model.GameSpecificState;
+import io.sengage.webservice.model.StreamingServicePaymentMetadata;
 import io.sengage.webservice.model.flappybird.FlappyBirdEndGameResult;
 import io.sengage.webservice.model.singlestroke.SingleStrokeEndGameResult;
 import io.sengage.webservice.router.LambdaRouter;
@@ -46,6 +50,7 @@ public class BaseModule {
 	public static final String CREATE_GAME_REQUEST_LABEL = "CreateGameRequest";
 	public static final String GAME_SPECIFIC_STATE_LABEL = "GameSpecificState";
 	public static final String END_GAME_RESULT_LABEL = "EndGameResult";
+	public static final String STREAMING_SERVICE_PAYMENT_METADATA_LABEL = "StreamingServicePaymentMetadata";
 	public static final String SENGAGE_WS_LAMBDA_ARN = "SengageWSLambdaArn";
 	
 	@Provides
@@ -91,6 +96,16 @@ public class BaseModule {
 					.className(CancelGame.class.getName())
 					.httpMethod("POST")
 					.pattern(Pattern.compile("^/game/(.*?)\\/cancel$"))
+					.build())
+			.registerActivity(Resource.builder()
+					.className(UpdateUserBalance.class.getName())
+					.httpMethod("PUT")
+					.pattern(Pattern.compile("^/balance$"))
+					.build())
+			.registerActivity(Resource.builder()
+					.className(GetUserBalance.class.getName())
+					.httpMethod("GET")
+					.pattern(Pattern.compile("^/balance$"))
 					.build());
 	}
 	
@@ -98,12 +113,15 @@ public class BaseModule {
 	@Singleton
 	static Gson provideGson(@Named(CREATE_GAME_REQUEST_LABEL) TypeAdapterFactory typeAdapterFactory,
 			@Named(GAME_SPECIFIC_STATE_LABEL) TypeAdapterFactory gameSpecificStateTypeAdapterFactory,
-			@Named(END_GAME_RESULT_LABEL) TypeAdapterFactory endGameResultTypeAdapterFactory) {
+			@Named(END_GAME_RESULT_LABEL) TypeAdapterFactory endGameResultTypeAdapterFactory,
+			@Named(STREAMING_SERVICE_PAYMENT_METADATA_LABEL) TypeAdapterFactory streamingServicePaymentMetadataTypeAdapterFactory
+			) {
 		return new GsonBuilder()
 			.registerTypeAdapter(Instant.class, new InstantTypeConverter())
 			.registerTypeAdapterFactory(typeAdapterFactory)
 			.registerTypeAdapterFactory(gameSpecificStateTypeAdapterFactory)
 			.registerTypeAdapterFactory(endGameResultTypeAdapterFactory)
+			.registerTypeAdapterFactory(streamingServicePaymentMetadataTypeAdapterFactory)
 			.serializeNulls()
 			.create();
 	}
@@ -137,6 +155,15 @@ public class BaseModule {
 				.of(EndGameResult.class, "type")
 				.registerSubtype(SingleStrokeEndGameResult.class, SingleStrokeEndGameResult.type)
 				.registerSubtype(FlappyBirdEndGameResult.class, FlappyBirdEndGameResult.type);
+	}
+	
+	@Provides
+	@Singleton
+	@Named(STREAMING_SERVICE_PAYMENT_METADATA_LABEL)
+	static TypeAdapterFactory provideStreamingServicePaymentMetadata() {
+		return RuntimeTypeAdapterFactory
+				.of(StreamingServicePaymentMetadata.class, "type")
+				.registerSubtype(TwitchPaymentMetadata.class, TwitchPaymentMetadata.typeName);
 	}
 	
 	@Provides

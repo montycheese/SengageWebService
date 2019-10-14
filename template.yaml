@@ -270,6 +270,25 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+            
+  MinigamesUserBalanceTable:
+    Condition: CreateTable
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: ChannelId
+          AttributeType: S
+        - AttributeName: UserId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ChannelId
+          KeyType: HASH
+        - AttributeName: UserId
+          KeyType: RANGE
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: MinigamesUserBalance
 Outputs:
   ApiGatewayLambdaInvokePermission:
     Description: Arn of the APIG lambda invoke permission

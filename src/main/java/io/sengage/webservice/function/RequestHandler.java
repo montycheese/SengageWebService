@@ -42,9 +42,8 @@ public final class RequestHandler extends BaseLambda<ServerlessInput, Serverless
 		logger = context.getLogger();
 		
 		ServerlessOutput output = new ServerlessOutput();
-		
+		Instant before = Instant.now();
 		try {
-			Instant before = Instant.now();
 			BaseLambda<ServerlessInput, ServerlessOutput> activity = 
 					router.getMatchingActivity(serverlessInput.getPath(), serverlessInput.getHttpMethod()).get();
 			Instant after = Instant.now();
@@ -67,6 +66,10 @@ public final class RequestHandler extends BaseLambda<ServerlessInput, Serverless
 			log.warn("RequestHandler#handleRequest()", e);
 			output.setStatusCode(HttpStatus.SC_BAD_REQUEST);
 			output.setBody(e.getMessage());
+		} catch (IllegalArgumentException e) {
+			log.warn("Illegal Argument Exception caught", e);
+			output.setStatusCode(HttpStatus.SC_BAD_REQUEST);
+			output.setBody(e.getMessage());
 		} catch (Exception e) {
 			Throwable throwable = Throwables.getRootCause(e);
 			if (throwable instanceof GameCompletedException) {
@@ -81,6 +84,7 @@ public final class RequestHandler extends BaseLambda<ServerlessInput, Serverless
 	            output.setBody("Unexpected error occurred while processing request");
 			}
 		}
+		// TODO: start recording metrics
 		
         output.setHeaders(getOutputHeaders());
 		return output;

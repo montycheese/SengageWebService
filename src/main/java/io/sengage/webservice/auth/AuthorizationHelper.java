@@ -42,4 +42,12 @@ public final class AuthorizationHelper {
 		
 		throw new UnauthorizedActionException("Only the broadcaster or moderator can create a game");
 	}
+	
+	public DecodedJWT authenticateBalanceRequest(String token) {
+		DecodedJWT jwt =  authenticateRequestAndVerifyToken(token);
+		if (TwitchJWTField.USER_ID.fromJWT(jwt) == null) {
+			throw new UnauthorizedActionException("Viewer must share UserID to use this functionality");
+		}
+		return jwt;
+	}
 }
