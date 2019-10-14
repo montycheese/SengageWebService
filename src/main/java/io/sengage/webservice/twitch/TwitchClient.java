@@ -24,6 +24,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import lombok.extern.log4j.Log4j2;
+
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpBackOffUnsuccessfulResponseHandler;
 import com.google.api.client.http.HttpContent;
@@ -31,16 +33,21 @@ import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpUnsuccessfulResponseHandler;
 import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.gson.Gson;
 
+@Log4j2
 @Singleton
 public final class TwitchClient {
 	
 	private static final String TWITCH_API_BASE_URL = "https://api.twitch.tv";
+	private static final int MAX_RETRIES_PUBSUB = 10;
+	private static final int BACKOFF_MILLI = 1000; // throttled at 1 TPS per channel for pubsub
+	private static final int TWITCH_PUBSUB_REQUEST_RATE_EXCEEDED_STATUS_CODE = 429;
 	
 	private final String clientId;
 	private final String extensionOwnerId;
@@ -72,14 +79,14 @@ public final class TwitchClient {
 		
 		JoinGameMessage message = GameItemToJoinGamePubSubMessageMapper.get(gameItem);
 		
-		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
+		return sendPubSubMessage(message, gameItem.getChannelId(), urlString, true);
 	}
 	
 	public boolean notifyChannelGameStarted(NotifyGameStartedRequest request) {
 		String urlString = getSendExtensionPubSubMessageUrl(request.getGameItem().getChannelId());
 
 		StartGameMessage message = StartGamePubSubMessageMapper.get(request);
-		return sendPubSubMessage(message, request.getGameItem().getChannelId(), urlString);
+		return sendPubSubMessage(message, request.getGameItem().getChannelId(), urlString, true);
 	}
 	
 	public boolean notifyChannelGameEnded(GameItem gameItem) {
@@ -87,7 +94,7 @@ public final class TwitchClient {
 
 		EndGameMessage message = GameItemToEndgamePubSubMessageMapper.get(gameItem);
 		
-		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
+		return sendPubSubMessage(message, gameItem.getChannelId(), urlString, true);
 	}
 	
 	public boolean notifyChannelGameCancelled(GameItem gameItem, GameCancellationReason cancellationReason) {
@@ -100,7 +107,7 @@ public final class TwitchClient {
 				.cancellationReason(cancellationReason)
 				.build();
 
-		return sendPubSubMessage(message, gameItem.getChannelId(), urlString);
+		return sendPubSubMessage(message, gameItem.getChannelId(), urlString, true);
 	}
 	
 	public boolean notifyChannelPlayerComplete(PlayerCompleteRequest playerCompleteRequest) {
@@ -108,7 +115,7 @@ public final class TwitchClient {
 		
 		PubSubGameMessage message = PlayerToPlayerCompletePubSubMessageMapper.get(playerCompleteRequest);
 		
-		return sendPubSubMessage(message, playerCompleteRequest.getChannelId(), urlString);
+		return sendPubSubMessage(message, playerCompleteRequest.getChannelId(), urlString, false);
 	}
 	
 	public boolean sendExtensionChatMessage(String channelId, String message) {
@@ -156,7 +163,7 @@ public final class TwitchClient {
 	}
 	
 	
-	private boolean sendPubSubMessage(PubSubGameMessage message, String channelId, String urlString) {
+	private boolean sendPubSubMessage(PubSubGameMessage message, String channelId, String urlString, boolean retryOnFailure) {
 		boolean success = false;
 		HttpContent content = new JsonHttpContent(jsonFactory, 
 				PubSubMessage.builder()
@@ -167,13 +174,38 @@ public final class TwitchClient {
 		
 		String authToken = jwtProvider.signJwt(getClaimsForChannelMessage(channelId));
 		GenericUrl url = new GenericUrl(urlString);
-		try {
-			sendHttpPostRequest(content, url, authToken, true);
-			success = true;
-		} catch (IOException e) {
+		
+		int retries = 0;
+		do {
+			try {
+				sendHttpPostRequest(content, url, authToken, true);
+				success = true;
+			} catch (HttpResponseException e) {
+				if (TWITCH_PUBSUB_REQUEST_RATE_EXCEEDED_STATUS_CODE == e.getStatusCode()) {
+					log.warn("Throttled by Twitch Pubsub api with error message {}. Attempt {}/{}. {}", e.getStatusMessage(), retries, MAX_RETRIES_PUBSUB, e);
+				} else {
+					// retry on all other error codes, since they don't publish their codes, we don't know all possible codes.
+					log.error("Unknown error code {} from Twitch pubsub api {}.", e.getStatusCode(), e);
+				}
+				try {
+					// Linear backoff, no jitter. 
+					Thread.sleep(BACKOFF_MILLI);
+				} catch (InterruptedException e1) {
+					log.warn("Thread interrupted while waiting to retry, {}", e1);
+					throw new RuntimeException("Thread interrupted while waiting to retry", e);
+				}
+				retries++;
+			} catch (IOException e) {
+				throw new RuntimeException(String.format("Unexpected exception thrown while sending pubsub message to channel [%s] at url [%s]",
+						channelId, urlString), e);
+			}
+		} while (retryOnFailure && !success && retries < MAX_RETRIES_PUBSUB);
+		
+		if (!success) {
 			throw new RuntimeException(String.format("Exception thrown while sending pubsub message to channel [%s] at url [%s]",
-					channelId, urlString), e);
+					channelId, urlString));
 		}
+		
 		return success;
 	}
 	
