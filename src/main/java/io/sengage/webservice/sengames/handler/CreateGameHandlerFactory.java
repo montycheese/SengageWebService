@@ -1,5 +1,6 @@
 package io.sengage.webservice.sengames.handler;
 
+import io.sengage.webservice.cache.GameCache;
 import io.sengage.webservice.model.Game;
 import io.sengage.webservice.persistence.GameDataProvider;
 import io.sengage.webservice.sf.StepFunctionTaskExecutor;
@@ -14,14 +15,17 @@ public class CreateGameHandlerFactory {
 	private final GameDataProvider gameDataProvider;
 	private final TwitchClient twitchClient;
 	private final StepFunctionTaskExecutor sfExecutor;
+	private final GameCache gameCache;
 	
 	@Inject
 	public CreateGameHandlerFactory(GameDataProvider gameDataProvider,
 			TwitchClient twitchClient,
-			StepFunctionTaskExecutor sfExecutor) {
+			StepFunctionTaskExecutor sfExecutor,
+			GameCache gameCache) {
 		this.gameDataProvider = gameDataProvider;
 		this.twitchClient = twitchClient;
 		this.sfExecutor = sfExecutor;
+		this.gameCache = gameCache;
 	}
 	
 	public CreateGameHandler get(Game game){
@@ -31,7 +35,8 @@ public class CreateGameHandlerFactory {
 			case FLAPPY_BIRD_BR:
 				return new CreateGameHandlerImpl(gameDataProvider,
 						twitchClient,
-						sfExecutor
+						sfExecutor,
+						gameCache
 				);
 			default:
 				throw new IllegalArgumentException("Could not find handler for: " + game.name());

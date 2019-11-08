@@ -2,6 +2,7 @@ package io.sengage.webservice.dagger;
 
 import io.sengage.webservice.function.CancelGame;
 import io.sengage.webservice.function.CreateGame;
+import io.sengage.webservice.function.FetchChannelActivity;
 import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.GetUserBalance;
 import io.sengage.webservice.function.JoinGame;
@@ -26,6 +27,7 @@ public interface ExtensionComponent {
 	void injectQuitGame(QuitGame quitGame);
 	void injectGetUserBalance(GetUserBalance getUserBalance);
 	void injectUpdateUserBalance(UpdateUserBalance updateUserBalance);
+	void injectFetchChannelActivity(FetchChannelActivity fetchChannelActivity);
 	void injectPing(Ping ping);
 	void injectKeepWarm(KeepWarm keepWarm);
 }

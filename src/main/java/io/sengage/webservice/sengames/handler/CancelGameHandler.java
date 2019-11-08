@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import lombok.extern.log4j.Log4j2;
+import io.sengage.webservice.cache.GameCache;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.GameCancellationReason;
 import io.sengage.webservice.model.GameItem;
@@ -21,14 +22,17 @@ public class CancelGameHandler {
 	private final GameDataProvider gameDataProvider;
 	private final TwitchClient twitchClient;
 	private final StepFunctionTaskExecutor sfExecutor;
+	private final GameCache gameCache;
 	
 	@Inject
 	public CancelGameHandler(GameDataProvider gameDataProvider,
 			TwitchClient twitchClient,
-			StepFunctionTaskExecutor sfExecutor) {
+			StepFunctionTaskExecutor sfExecutor,
+			GameCache gameCache) {
 		this.gameDataProvider = gameDataProvider;
 		this.twitchClient = twitchClient;
 		this.sfExecutor = sfExecutor;
+		this.gameCache = gameCache;
 	}
 	
 	public void handleCancelGame(String gameId, String cancellationReason) {
@@ -58,6 +62,7 @@ public class CancelGameHandler {
 				throw new RuntimeException("Failed to update game to cancelled", e);
 			} finally {
 				sfExecutor.cleanUpGameStateMachineResources(game);
+				gameCache.clearGameDetails(game.getChannelId());
 			}
 		
 	}

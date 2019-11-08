@@ -11,6 +11,8 @@ import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsync;
 import com.amazonaws.services.cloudwatchevents.AmazonCloudWatchEventsAsyncClientBuilder;
 import com.amazonaws.services.lambda.AWSLambdaAsync;
 import com.amazonaws.services.lambda.AWSLambdaAsyncClientBuilder;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
@@ -18,6 +20,7 @@ import com.google.gson.TypeAdapterFactory;
 import io.sengage.webservice.balance.TwitchPaymentMetadata;
 import io.sengage.webservice.function.CancelGame;
 import io.sengage.webservice.function.CreateGame;
+import io.sengage.webservice.function.FetchChannelActivity;
 import io.sengage.webservice.function.GetFinalGameResults;
 import io.sengage.webservice.function.GetUserBalance;
 import io.sengage.webservice.function.JoinGame;
@@ -52,6 +55,7 @@ public class BaseModule {
 	public static final String END_GAME_RESULT_LABEL = "EndGameResult";
 	public static final String STREAMING_SERVICE_PAYMENT_METADATA_LABEL = "StreamingServicePaymentMetadata";
 	public static final String SENGAGE_WS_LAMBDA_ARN = "SengageWSLambdaArn";
+	public static final String S3_BUCKET_NAME = "S3BucketDomainName";
 	
 	@Provides
 	@Singleton
@@ -106,6 +110,11 @@ public class BaseModule {
 					.className(GetUserBalance.class.getName())
 					.httpMethod("GET")
 					.pattern(Pattern.compile("^/balance$"))
+					.build())
+			.registerActivity(Resource.builder()
+					.className(FetchChannelActivity.class.getName())
+					.httpMethod("GET")
+					.pattern(Pattern.compile("^/channel$"))
 					.build());
 	}
 	
@@ -168,20 +177,34 @@ public class BaseModule {
 	
 	@Provides
 	@Singleton
-	static AmazonCloudWatchEventsAsync provideAmazonCloudWatchEventsAsync() {
+	static AmazonCloudWatchEventsAsync provideAmazonCloudWatchEventsAsync(EnvironmentVariableCredentialsProvider credProvider) {
 		return AmazonCloudWatchEventsAsyncClientBuilder
 				.standard()
-				.withCredentials(new EnvironmentVariableCredentialsProvider())
+				.withCredentials(credProvider)
 				.build();
 	}
 	
 	@Provides
 	@Singleton
-	static AWSLambdaAsync provideAWSLambdaAsync() {
+	static AWSLambdaAsync provideAWSLambdaAsync(EnvironmentVariableCredentialsProvider credProvider) {
 		return AWSLambdaAsyncClientBuilder
 				.standard()
-				.withCredentials(new EnvironmentVariableCredentialsProvider())
+				.withCredentials(credProvider)
 				.build();
+	}
+	
+	@Provides
+	@Singleton
+	static AmazonS3 provideAmazonS3(EnvironmentVariableCredentialsProvider credProvider) {
+		return AmazonS3ClientBuilder.standard()
+				.withCredentials(credProvider)
+				.build();
+	}
+	
+	@Provides
+	@Singleton
+	static EnvironmentVariableCredentialsProvider provideCredentialsProvider() {
+		return new EnvironmentVariableCredentialsProvider();
 	}
 	
 	@Provides
@@ -189,5 +212,15 @@ public class BaseModule {
 	@Named(SENGAGE_WS_LAMBDA_ARN)
 	static String provideSengageWSLambdaFunctionName() {
 		return System.getenv(SENGAGE_WS_LAMBDA_ARN);
+	}
+	
+	@Provides
+	@Singleton
+	@Named(S3_BUCKET_NAME)
+	static String provideS3BucketName() {
+		// streamminigames.s3.amazonaws.com
+		String domain = System.getenv(S3_BUCKET_NAME);
+		int i = domain.indexOf(".s3.");
+		return domain.substring(0, i);
 	}
 }
