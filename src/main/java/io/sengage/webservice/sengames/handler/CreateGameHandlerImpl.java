@@ -8,6 +8,7 @@ import lombok.extern.log4j.Log4j2;
 
 import com.google.common.collect.Sets;
 
+import io.sengage.webservice.cache.GameCache;
 import io.sengage.webservice.exception.GameInProgressException;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.Game;
@@ -32,12 +33,14 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 	private final GameDataProvider gameDataProvider;
 	private final TwitchClient twitchClient;
 	private final StepFunctionTaskExecutor sfExecutor;
+	private final GameCache gameCache;
 	
 	public CreateGameHandlerImpl(GameDataProvider gameDataProvider, TwitchClient twitchClient,
-			StepFunctionTaskExecutor sfExecutor) {
+			StepFunctionTaskExecutor sfExecutor, GameCache gameCache) {
 		this.gameDataProvider = gameDataProvider;
 		this.twitchClient = twitchClient;
 		this.sfExecutor = sfExecutor;
+		this.gameCache = gameCache;
 	}
 
 	@Override
@@ -62,6 +65,12 @@ public class CreateGameHandlerImpl extends CreateGameHandler {
 		item = item.toBuilder().gameStatus(GameStatus.WAITING_FOR_PLAYERS)
 				.version(1L)
 				.build();
+		try {
+			gameCache.putGameDetails(streamContext.getChannelId(), item);
+		} catch (Exception e) {
+			// OK to swallow. Worst case some mobile users may not be able to join.
+			log.warn("Failed to cache details for game {}, due to {}", item.getGameId(), e);
+		}
 		
 		try {
 			twitchClient.notifyChannelJoinGame(item);	

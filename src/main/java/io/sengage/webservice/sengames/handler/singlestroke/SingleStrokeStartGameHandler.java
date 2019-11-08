@@ -3,6 +3,7 @@ package io.sengage.webservice.sengames.handler.singlestroke;
 import java.util.Optional;
 
 import lombok.extern.log4j.Log4j2;
+import io.sengage.webservice.cache.GameCache;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.GameItem;
 import io.sengage.webservice.model.GameStatus;
@@ -21,8 +22,9 @@ public class SingleStrokeStartGameHandler extends StartGameHandler {
 	
 	public SingleStrokeStartGameHandler(GameDataProvider gameDataProvider,
 			PlayerDataProvider playerDataProvider, TwitchClient twitchClient,
-			StepFunctionTaskExecutor sfExecutor, SingleStrokeEndGameHandler endGameHandler) {
-		super(gameDataProvider, playerDataProvider, twitchClient, sfExecutor);
+			StepFunctionTaskExecutor sfExecutor, SingleStrokeEndGameHandler endGameHandler,
+			GameCache gameCache) {
+		super(gameDataProvider, playerDataProvider, twitchClient, sfExecutor, gameCache);
 		this.endGameHandler = endGameHandler;
 	}
 	
@@ -75,6 +77,7 @@ public class SingleStrokeStartGameHandler extends StartGameHandler {
 					.totalPlayers(numPlayersJoined)
 					.build());
 		}
+		clearGameDetailsCache(game);
 	}
 
 }

@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import lombok.Builder;
 import lombok.extern.log4j.Log4j2;
+import io.sengage.webservice.cache.GameCache;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.GameCancellationReason;
 import io.sengage.webservice.model.GameItem;
@@ -23,13 +24,15 @@ public class StartGameHandler {
 	protected final PlayerDataProvider playerDataProvider;
 	protected final TwitchClient twitchClient;
 	protected final StepFunctionTaskExecutor sfExecutor;
+	private final GameCache gameCache;
 	
 	public StartGameHandler(GameDataProvider gameDataProvider, PlayerDataProvider playerDataProvider, 
-			TwitchClient twitchClient, StepFunctionTaskExecutor sfExecutor) {
+			TwitchClient twitchClient, StepFunctionTaskExecutor sfExecutor, GameCache gameCache) {
 		this.gameDataProvider = gameDataProvider;
 		this.twitchClient = twitchClient;
 		this.sfExecutor = sfExecutor;
 		this.playerDataProvider = playerDataProvider;
+		this.gameCache = gameCache;
 	}
 	
 	public void startGame(String gameId) {
@@ -69,6 +72,7 @@ public class StartGameHandler {
 					.totalPlayers(numPlayersJoined)
 					.build());
 		}
+		clearGameDetailsCache(game);
 	}
 	
 	protected void cancelGame(GameItem game) {
@@ -83,5 +87,9 @@ public class StartGameHandler {
 		twitchClient.notifyChannelGameCancelled(game, GameCancellationReason.NO_PLAYERS);
 		
 		sfExecutor.cleanUpGameStateMachineResources(game);
+	}
+	
+	protected void clearGameDetailsCache(GameItem gameItem) {
+		gameCache.clearGameDetails(gameItem.getChannelId());
 	}
 }

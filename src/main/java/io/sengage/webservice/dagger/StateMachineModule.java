@@ -10,7 +10,7 @@ import com.amazonaws.services.stepfunctions.AWSStepFunctionsAsyncClientBuilder;
 import dagger.Module;
 import dagger.Provides;
 
-@Module
+@Module(includes = BaseModule.class)
 public class StateMachineModule {
 	
 	public static final String STATE_MACHINE_EXE_ROLE_ARN = "StateMachineExecutionRoleArn";
@@ -32,10 +32,10 @@ public class StateMachineModule {
 	
 	@Provides
 	@Singleton
-	static AWSStepFunctionsAsync provideAWSStepFunctionsAsync() {
+	static AWSStepFunctionsAsync provideAWSStepFunctionsAsync(EnvironmentVariableCredentialsProvider credProvider) {
 		return AWSStepFunctionsAsyncClientBuilder
 				.standard()
-				.withCredentials(new EnvironmentVariableCredentialsProvider())
+				.withCredentials(credProvider)
 				.build();
 	}
 }
