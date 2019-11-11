@@ -18,7 +18,13 @@ Globals:
         SengageWSLambdaArn: !Join [":", ["arn:aws:lambda", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "function", !Join ["-", [!Ref DeploymentStage, "SengageWSLambdaFunction"]]   ]]
         ConcurrentExecutions: "15"
         S3BucketDomainName: !GetAtt MinigamesBucket.DomainName
-        
+
+Mappings: 
+  StageMap: 
+    Beta: 
+      Name: beta
+    Prod: 
+      Name: prod
 
 Parameters:
   DeploymentStage:
@@ -207,7 +213,7 @@ Resources:
   MinigamesBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: "streamminigames"
+      BucketName: !Join ["-", [!FindInMap [StageMap, !Ref DeploymentStage, "Name"], "streamminigames"]]
     
           
   # DB
