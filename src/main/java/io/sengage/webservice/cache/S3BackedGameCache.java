@@ -28,7 +28,7 @@ public class S3BackedGameCache implements GameCache {
 		s3Client.putObject(
 				cacheBucketName, 
 				String.format(Constants.GAME_SESSION_DETAILS_CACHE_S3_PATH_FORMAT, channelId),
-				gson.toJson(message, JoinGameMessage.class)
+				gson.toJson(message, message.getClass())
 			);
 		
 	}
