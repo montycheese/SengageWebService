@@ -49,7 +49,7 @@ public class UpdateUserBalance extends BaseLambda<ServerlessInput, ServerlessOut
 		StreamContext streamContext = JwtUtils.getStreamContext(jwt);
 		
 		UpdateUserBalanceRequest request = gson.fromJson(serverlessInput.getBody(), UpdateUserBalanceRequest.class);
-		
+
 		TransactionProcessor processor = processorFactory.get(request.getPlatform());
 		MinigamesUserBalance newUserBalance;
 		
@@ -60,7 +60,7 @@ public class UpdateUserBalance extends BaseLambda<ServerlessInput, ServerlessOut
 							request.getAmount(), request.getVersion());
 			} else {
 				newUserBalance = processor.handleBalanceUpdate(streamContext.getChannelId(), streamContext.getUserId(), 
-						request.getAmount(), request.getStreamingServicePaymentMetadata());
+						request.getAmount(), request.getStreamingServicePaymentMetadata(), request.getVersion());
 			}
 		} catch (InsufficientFundsException ex) {
 			log.warn("Could not process transaction due to lack of sufficient funds", ex);

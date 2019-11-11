@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.model.ConditionalCheckFailedException;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import io.sengage.webservice.balance.TransactionReceipt;
 import io.sengage.webservice.exception.ItemVersionMismatchException;
 import io.sengage.webservice.model.MinigamesUserBalance;
 import io.sengage.webservice.persistence.PaymentDataProvider;
@@ -32,6 +33,11 @@ public class DynamoDBPaymentDataProvider implements PaymentDataProvider {
 	@Override
 	public MinigamesUserBalance getBalance(String channelId, String userId) {
 		return mapper.load(MinigamesUserBalance.class, channelId, userId);
+	}
+
+	@Override
+	public void storeTransactionReceipt(TransactionReceipt txReceipt) {
+		mapper.save(txReceipt);
 	}
 
 }

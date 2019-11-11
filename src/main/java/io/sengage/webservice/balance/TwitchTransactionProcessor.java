@@ -24,11 +24,23 @@ public class TwitchTransactionProcessor implements TransactionProcessor {
 
 	@Override
 	public MinigamesUserBalance handleBalanceUpdate(String channelId, String userId, long delta,
-			StreamingServicePaymentMetadata metadata)
+			StreamingServicePaymentMetadata metadata, long prevVersionId)
 			throws InsufficientFundsException, FundsLimitExceededException {
-		// TODO Auto-generated method stub
-		MinigamesUserBalance balance = handleBalanceUpdate(channelId, userId, delta, 0);
-		// TODO: store TX receipt
+
+		MinigamesUserBalance balance = handleBalanceUpdate(channelId, userId, delta, prevVersionId);
+		/* TODO: Perhaps just don't use this for Twitch since their API supports retrieving transaction receipts.
+		TwitchPaymentMetadata twitchPaymentMetadata = (TwitchPaymentMetadata) metadata;
+		TransactionReceipt txReceipt = TransactionReceipt.builder()
+				.transactionId(twitchPaymentMetadata.getTransactionId())
+				.userId(userId)
+				.channelId(channelId)
+				.currency(Currency.from(twitchPaymentMetadata.getProduct().getCost().getType()))
+				.cost(Long.valueOf(twitchPaymentMetadata.getProduct().getCost().getAmount()))
+				.platform(Platform.TWITCH)
+				.sku(twitchPaymentMetadata.getProduct().getSku())
+				.createdAt(Instant.now())
+				.build();
+		paymentDataProvider.storeTransactionReceipt(txReceipt);*/
 		return balance;
 	}
 

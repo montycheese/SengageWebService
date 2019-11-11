@@ -20,6 +20,6 @@ public interface TransactionProcessor {
 	MinigamesUserBalance handleBalanceUpdate(String channelId, String userId, long delta, long prevVersionId)
 			throws InsufficientFundsException, FundsLimitExceededException;
 	
-	MinigamesUserBalance handleBalanceUpdate(String channelId, String userId, long delta, StreamingServicePaymentMetadata metadata)
+	MinigamesUserBalance handleBalanceUpdate(String channelId, String userId, long delta, StreamingServicePaymentMetadata metadata, long prevVersionId)
 			throws InsufficientFundsException, FundsLimitExceededException;
 }
