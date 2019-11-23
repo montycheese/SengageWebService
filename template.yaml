@@ -12,7 +12,7 @@ Globals:
       Variables:
         ExtensionOwnerTwitchId: "79606633"
         ClientId: "pfo4osx6zryo4kdo5oabxz8pyv84es"
-        ExtensionVersion: "1.0.0"
+        ExtensionVersion: "1.1.0"
         StateMachineExecutionRoleArn: !GetAtt StatesExecutionRole.Arn
         GameTaskHandlerLambdaArn: !Join [":", ["arn:aws:lambda", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "function", !Join ["-", [!Ref DeploymentStage, "SengamesGameTaskHandlerLambdaFunction"]]   ]]
         SengageWSLambdaArn: !Join [":", ["arn:aws:lambda", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "function", !Join ["-", [!Ref DeploymentStage, "SengageWSLambdaFunction"]]   ]]

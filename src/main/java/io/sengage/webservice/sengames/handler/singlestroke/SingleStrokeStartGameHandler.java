@@ -58,6 +58,7 @@ public class SingleStrokeStartGameHandler extends StartGameHandler {
 			} else {
 				cancelGame(game);
 			}
+			clearGameDetailsCache(game);
 			return;
 		} else {
 			game.setGameStatus(GameStatus.IN_PROGRESS);
@@ -70,6 +71,8 @@ public class SingleStrokeStartGameHandler extends StartGameHandler {
 			} catch (ItemVersionMismatchException e) {
 				log.error("Encountered exception while updating game state");
 				return;
+			} finally {
+				clearGameDetailsCache(game);
 			}
 			
 			twitchClient.notifyChannelGameStarted(NotifyGameStartedRequest.builder()
@@ -77,7 +80,6 @@ public class SingleStrokeStartGameHandler extends StartGameHandler {
 					.totalPlayers(numPlayersJoined)
 					.build());
 		}
-		clearGameDetailsCache(game);
 	}
 
 }
