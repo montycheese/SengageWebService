@@ -14,7 +14,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 public class JwtUtils {
-	private static final int TOKEN_EXPIRATION_LEEWAY_SECONDS = 120;
+	private static final long TOKEN_EXPIRATION_LEEWAY_SECONDS = 18000; // 5 hours
 	
 	// TODO replace with dynamically injected secret (protected by SM)
 	// also need to fetch by client id/extension id
