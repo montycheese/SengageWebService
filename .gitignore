@@ -1,3 +1,8 @@
 target
 .settings
 *packaged.yaml
+
+
+.project
+.idea
+*.iml
